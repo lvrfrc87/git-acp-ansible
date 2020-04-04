@@ -1,0 +1,212 @@
+(git_test_module) olivierif:git_test_module federicoolivieri$ ansible-playbook git_acp.yml -v --vault-password-file ~/.v
+No config file found; using defaults
+[WARNING]: No inventory was parsed, only implicit localhost is available
+[WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
+
+PLAY [START git commit integration tests] ****************************************************************************************************************************************************************************************************
+
+TASK [HTTPS | loca repo ahead.] **************************************************************************************************************************************************************************************************************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "On branch master\nYour branch is up to date with 'origin/master'.\n\nnothing to commit, working tree clean\n"}
+...ignoring
+
+TASK [debug] *********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": false,
+        "failed": true,
+        "msg": "On branch master\nYour branch is up to date with 'origin/master'.\n\nnothing to commit, working tree clean\n"
+    }
+}
+
+TASK [assert] ********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [SSH | local repo ahead.] ***************************************************************************************************************************************************************************************************************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "On branch master\nYour branch is up to date with 'origin/master'.\n\nnothing to commit, working tree clean\n"}
+...ignoring
+
+TASK [debug] *********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": false,
+        "failed": true,
+        "msg": "On branch master\nYour branch is up to date with 'origin/master'.\n\nnothing to commit, working tree clean\n"
+    }
+}
+
+TASK [assert] ********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [SETUP | sync repo pull.] ***************************************************************************************************************************************************************************************************************
+changed: [localhost] => {"changed": true, "cmd": "git -C /Users/federicoolivieri/git/git_test_module pull", "delta": "0:00:02.558077", "end": "2020-04-02 11:33:29.567681", "rc": 0, "start": "2020-04-02 11:33:27.009604", "stderr": "From gitlab.com:networkAutomation/git_test_module\n   f158eaf..7783759  master     -> origin/master", "stderr_lines": ["From gitlab.com:networkAutomation/git_test_module", "   f158eaf..7783759  master     -> origin/master"], "stdout": "Updating f158eaf..7783759\nFast-forward\n 1585819355N.txt | 0\n 1 file changed, 0 insertions(+), 0 deletions(-)\n delete mode 100644 1585819355N.txt", "stdout_lines": ["Updating f158eaf..7783759", "Fast-forward", " 1585819355N.txt | 0", " 1 file changed, 0 insertions(+), 0 deletions(-)", " delete mode 100644 1585819355N.txt"]}
+
+TASK [SETUP | sync repo push.] ***************************************************************************************************************************************************************************************************************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "On branch master\nYour branch is up to date with 'origin/master'.\n\nnothing to commit, working tree clean\n"}
+...ignoring
+
+TASK [COMMIT FAIL | nothing to commit.] ******************************************************************************************************************************************************************************************************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "On branch master\nYour branch is up to date with 'origin/master'.\n\nnothing to commit, working tree clean\n"}
+...ignoring
+
+TASK [debug] *********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": false,
+        "failed": true,
+        "msg": "On branch master\nYour branch is up to date with 'origin/master'.\n\nnothing to commit, working tree clean\n"
+    }
+}
+
+TASK [assert] ********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [ADD FAIL | add not exsisting file.] ****************************************************************************************************************************************************************************************************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "fatal: pathspec 'i_do_not_exsisit.txt' did not match any files\n"}
+...ignoring
+
+TASK [debug] *********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": false,
+        "failed": true,
+        "msg": "fatal: pathspec 'i_do_not_exsisit.txt' did not match any files\n"
+    }
+}
+
+TASK [assert] ********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [SETUP | set first random file name.] ***************************************************************************************************************************************************************************************************
+ok: [localhost] => {"ansible_facts": {"file1": "1585820011N.txt"}, "changed": false}
+
+TASK [SETUP | touch file1.] ******************************************************************************************************************************************************************************************************************
+changed: [localhost] => (item=1585820011N.txt) => {"ansible_loop_var": "item", "changed": true, "dest": "/Users/federicoolivieri/git/git_test_module/1585820011N.txt", "gid": 20, "group": "staff", "item": "1585820011N.txt", "mode": "0644", "owner": "federicoolivieri", "size": 0, "state": "file", "uid": 502}
+
+TASK [HTTPS | add "1585820011N.txt" .] *******************************************************************************************************************************************************************************************************
+changed: [localhost] => {"changed": true, "output": ["[master 4051ab6] \"Add file1.\"\n 1 file changed, 0 insertions(+), 0 deletions(-)\n create mode 100644 1585820011N.txt\n", "To https://gitlab.com/networkAutomation/git_test_module.git\n   7783759..4051ab6  master -> master\n"]}
+
+TASK [debug] *********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": true,
+        "failed": false,
+        "output": [
+            "[master 4051ab6] \"Add file1.\"\n 1 file changed, 0 insertions(+), 0 deletions(-)\n create mode 100644 1585820011N.txt\n",
+            "To https://gitlab.com/networkAutomation/git_test_module.git\n   7783759..4051ab6  master -> master\n"
+        ]
+    }
+}
+
+TASK [assert] ********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [SETUP | rm file1.] *********************************************************************************************************************************************************************************************************************
+changed: [localhost] => (item=1585820011N.txt) => {"ansible_loop_var": "item", "changed": true, "item": "1585820011N.txt", "path": "/Users/federicoolivieri/git/git_test_module/1585820011N.txt", "state": "absent"}
+
+TASK [SSH | add "1585820011N.txt".] **********************************************************************************************************************************************************************************************************
+changed: [localhost] => {"changed": true, "output": ["[master 6494118] \"Add file1.\"\n 1 file changed, 0 insertions(+), 0 deletions(-)\n delete mode 100644 1585820011N.txt\n", "To gitlab.com:networkAutomation/git_test_module.git\n   4051ab6..6494118  master -> master\n"]}
+
+TASK [debug] *********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": true,
+        "failed": false,
+        "output": [
+            "[master 6494118] \"Add file1.\"\n 1 file changed, 0 insertions(+), 0 deletions(-)\n delete mode 100644 1585820011N.txt\n",
+            "To gitlab.com:networkAutomation/git_test_module.git\n   4051ab6..6494118  master -> master\n"
+        ]
+    }
+}
+
+TASK [assert] ********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [HTTPS | fail because ssh URL.] *********************************************************************************************************************************************************************************************************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "HTTPS mode selected but not HTTPS URL provided"}
+...ignoring
+
+TASK [debug] *********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": false,
+        "failed": true,
+        "msg": "HTTPS mode selected but not HTTPS URL provided"
+    }
+}
+
+TASK [assert] ********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [SSH | fail because https URL.] *********************************************************************************************************************************************************************************************************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "SSH mode selected but HTTPS URL provided"}
+...ignoring
+
+TASK [debug] *********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": false,
+        "failed": true,
+        "msg": "SSH mode selected but HTTPS URL provided"
+    }
+}
+
+TASK [assert] ********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [SETUP | create test directory.] ********************************************************************************************************************************************************************************************************
+changed: [localhost] => {"changed": true, "gid": 20, "group": "staff", "mode": "0755", "owner": "federicoolivieri", "path": "/Users/federicoolivieri/test_directory", "size": 64, "state": "directory", "uid": 502}
+
+TASK [SETUP | create local bare repo] ********************************************************************************************************************************************************************************************************
+changed: [localhost] => (item=git -C ~/test_directory init --bare repo.git) => {"ansible_loop_var": "item", "changed": true, "cmd": "git -C ~/test_directory init --bare repo.git", "delta": "0:00:00.027986", "end": "2020-04-02 11:33:40.844621", "item": "git -C ~/test_directory init --bare repo.git", "rc": 0, "start": "2020-04-02 11:33:40.816635", "stderr": "", "stderr_lines": [], "stdout": "Initialized empty Git repository in /Users/federicoolivieri/test_directory/repo.git/", "stdout_lines": ["Initialized empty Git repository in /Users/federicoolivieri/test_directory/repo.git/"]}
+changed: [localhost] => (item=git -C ~/test_directory clone repo.git -l ) => {"ansible_loop_var": "item", "changed": true, "cmd": "git -C ~/test_directory clone repo.git -l ", "delta": "0:00:00.067599", "end": "2020-04-02 11:33:41.202664", "item": "git -C ~/test_directory clone repo.git -l ", "rc": 0, "start": "2020-04-02 11:33:41.135065", "stderr": "Cloning into 'repo'...\nwarning: You appear to have cloned an empty repository.\ndone.", "stderr_lines": ["Cloning into 'repo'...", "warning: You appear to have cloned an empty repository.", "done."], "stdout": "", "stdout_lines": []}
+
+TASK [SETUP | touch file1.] ******************************************************************************************************************************************************************************************************************
+changed: [localhost] => (item=1585820011N.txt) => {"ansible_loop_var": "item", "changed": true, "dest": "/Users/federicoolivieri/test_directory/repo/1585820011N.txt", "gid": 20, "group": "staff", "item": "1585820011N.txt", "mode": "0644", "owner": "federicoolivieri", "size": 0, "state": "file", "uid": 502}
+
+TASK [LOCAL | push on local repo.] ***********************************************************************************************************************************************************************************************************
+changed: [localhost] => {"changed": true, "output": ["[master (root-commit) b77b8a7] \"Add file1.\"\n 1 file changed, 0 insertions(+), 0 deletions(-)\n create mode 100644 1585820011N.txt\n", "To /Users/federicoolivieri/test_directory/repo.git\n * [new branch]      master -> master\n"]}
+
+TASK [debug] *********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": true,
+        "failed": false,
+        "output": [
+            "[master (root-commit) b77b8a7] \"Add file1.\"\n 1 file changed, 0 insertions(+), 0 deletions(-)\n create mode 100644 1585820011N.txt\n",
+            "To /Users/federicoolivieri/test_directory/repo.git\n * [new branch]      master -> master\n"
+        ]
+    }
+}
+
+TASK [assert] ********************************************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+PLAY RECAP ***********************************************************************************************************************************************************************************************************************************
+localhost                  : ok=35   changed=9    unreachable=0    failed=0    skipped=0    rescued=0    ignored=7

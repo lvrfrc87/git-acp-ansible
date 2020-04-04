@@ -1,0 +1,2 @@
+ansible
+git>=2.10.0
