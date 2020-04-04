@@ -1,4 +1,4 @@
-# git-acp-ansible`
+# git-acp-ansible
 
 `git_acp` is an Ansible module for `git add`, `git commit` and `git push` operations on local or remote (https/ssh) git repo.
 
