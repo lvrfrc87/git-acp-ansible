@@ -2,9 +2,27 @@
 
 `git_acp` is an Ansible module for `git add`, `git commit` and `git push` operations on local or remote (https/ssh) git repo.
 
-## Install:
+### Install:
 
+To install just run the command:
 
+`pip install git-acp-ansible`
+
+### Configure Ansible:
+
+Edit your `ansible.cfg` file and add the path where `git_acp` module is installed.
+
+i.e.
+
+```
+[defaults]
+library = ./lib/python3.7/site-packages/git-acp-ansible/modules
+```
+
+If you run a `virtualenv` most probably the path would be something similar to the example above. 
+Otherwise you can use for example `mlocate` to find where the module is.
+
+For more info, have a look to [Ansible Docs](https://docs.ansible.com/ansible/latest/installation_guide/intro_configuration.html#library)
 
 ### Module Documentation:
 
@@ -59,30 +77,32 @@ options:
         required: True
         type: str
 ```
+
 ### Examples:
 
 ```
-- name: HTTPS | add file1.
+- name: HTTPS | push all changes.
   git_acp:
     user: Federico87
     token: mytoken
     path: /Users/git/git_acp
     branch: master
-    comment: Add file1.
+    comment: Add all the thinghs.
     add: [ "." ]
     mode: https
     url: "https://gitlab.com/networkAutomation/git_test_module.git"
 
-- name: SSH | add file1.
+- name: SSH | push file1 and file2.
   git_acp:
     path: /Users/git/git_acp
     branch: master
-    comment: Add file1.
-    add: [ file1  ]
+    comment: Add file1 and file2.
+    add: [ file1, file2 ]
     mode: ssh
+    push_option: ci.skip
     url: "git@gitlab.com:networkAutomation/git_test_module.git"
 
-- name: LOCAL | push on local repo.
+- name: LOCAL | push file1 on local repo.
   git_acp:
     path: "~/test_directory/repo"
     branch: master
