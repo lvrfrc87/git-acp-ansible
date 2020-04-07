@@ -4,6 +4,7 @@
 - Fix return for `push_options`
 
 # Ver. 1.0.1
+
 - Change version only
 
 # Ver. 1.0.0
