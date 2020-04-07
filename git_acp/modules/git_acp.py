@@ -132,19 +132,9 @@ def git_add(module):
 
 def git_commit(module):
 
-    empty_commit = module.params.get('empty_commit')
     comment = module.params.get('comment')
 
-    if comment and empty_commit == 'allow':
-        commit_cmds = [
-            'git',
-            'commit',
-            '--allow-empty',
-            '-m',
-            '"{0}"'.format(comment),
-        ]
-
-    if comment and empty_commit != 'allow':
+    if comment:
         commit_cmds = [
             'git',
             'commit',
@@ -219,7 +209,8 @@ def git_push(module):
             module.fail_json(msg='HTTPS mode selected but repo is not HTTPS')
 
         if push_option:
-            return [set_url_cmd, push.insert(3, '--push-option={0} '.format(push_option))]
+            push.insert(3, '--push-option={0} '.format(push_option))
+            return [set_url_cmd, push]
 
         if not push_option:
             return [set_url_cmd, push]
@@ -229,7 +220,8 @@ def git_push(module):
             module.fail_json(msg='SSH mode selected but HTTPS URL provided')
 
         if push_option:
-            return [set_url_cmd, push.insert(3, '--push-option={0} '.format(push_option))]
+            push.insert(3, '--push-option={0} '.format(push_option))
+            return [set_url_cmd, push]
 
         if not push_option:
             return [set_url_cmd, push]
