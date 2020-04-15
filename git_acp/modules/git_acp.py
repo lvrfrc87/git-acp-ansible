@@ -140,7 +140,7 @@ def git_commit(module):
             'git',
             'commit',
             '-m',
-            '"{0}"'.format(comment),
+            comment,
         ]
 
     if commit_cmds:
