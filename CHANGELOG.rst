@@ -1,3 +1,11 @@
+# Ver. 1.0.4
+
+- Fix comment variable
+- Implement RC validation
+- Update return values
+- Add `--` in git_add
+- Move URLs conditional under main
+
 # Ver. 1.0.2
 
 - Remove unused `allow_empty`

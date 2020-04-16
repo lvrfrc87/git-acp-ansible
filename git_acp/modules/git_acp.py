@@ -14,7 +14,6 @@ DOCUMENTATION = '''
 module: git_acp
 author:
     - "Federico Olivieri (@Federico87)"
-version_added: "2.10"
 short_description: Perform git add, commit and push operations.
 description:
     - Manage C(git add), C(git commit) and C(git push) on a local
@@ -119,23 +118,32 @@ from ansible.module_utils.basic import AnsibleModule
 def git_add(module):
 
     add = module.params.get('add')
+    path = module.params.get('path')
 
-    if add:
-        add_cmds = [
-            'git',
-            'add',
-        ]
-        for item in add:
-            add_cmds.insert(len(add_cmds), item)
+    add_cmds = [
+        'git',
+        'add',
+        '--',
+    ]
+    add_cmds.extend(add)
 
-        return [add_cmds]
+    rc, _output, error = module.run_command(add_cmds, cwd=path)
+
+    if rc != 0:
+        module.fail_json(msg=error)
+    if rc == 0:
+        return
 
 
 def git_commit(module):
 
+    result = dict(changed=False)
     comment = module.params.get('comment')
+    path = module.params.get('path')
 
     if comment:
+        git_add(module)
+
         commit_cmds = [
             'git',
             'commit',
@@ -143,8 +151,17 @@ def git_commit(module):
             comment,
         ]
 
-    if commit_cmds:
-        return [commit_cmds]
+    rc, output, _error = module.run_command(commit_cmds, cwd=path)
+
+    if rc != 0:
+        module.fail_json(msg=output)
+    if rc == 0:
+        if output:
+            result.update(
+                git_commit=output,
+                changed=True
+            )
+            return result
 
 
 def git_push(module):
@@ -180,52 +197,46 @@ def git_push(module):
                 url,
             ]
 
-        return remote_add
+        rc, _output, error = module.run_command(remote_add, cwd=path)
 
-    set_url_cmd = git_set_url(module)
-    url = module.params.get('url')
+        if rc != 0:
+            module.fail_json(msg=error)
+        if rc == 0:
+            return
+
+    def git_push_cmd(path, cmd_push):
+        result = dict(changed=False)
+
+        rc, output, error = module.run_command(cmd_push, cwd=path)
+
+        if rc != 0:
+            module.fail_json(msg=str(error) + str(output))
+        if rc == 0:
+            result.update(
+                git_push=str(error) + str(output),
+                changed=True
+            )
+            return result
+
     branch = module.params.get('branch')
     push_option = module.params.get('push_option')
-    mode = module.params.get('mode')
+    path = module.params.get('path')
 
-    push = [
+    cmd_push = [
         'git',
         'push',
         'origin',
         branch,
     ]
 
-    if mode == 'local':
-        if 'https' in url or 'ssh' in url:
-            module.fail_json(msg='SSH or HTTPS mode selected but repo is LOCAL')
+    if not push_option:
+        git_set_url(module)
+        return git_push_cmd(path, cmd_push)
 
-        if push_option:
-            module.fail_json(msg='"--push-option" not supported with mode "local"')
-
-        if not push_option:
-            return [set_url_cmd, push]
-
-    if mode == 'https':
-        if 'https' not in url:
-            module.fail_json(msg='HTTPS mode selected but repo is not HTTPS')
-
-        if push_option:
-            push.insert(3, '--push-option={0} '.format(push_option))
-            return [set_url_cmd, push]
-
-        if not push_option:
-            return [set_url_cmd, push]
-
-    if mode == 'ssh':
-        if 'https' in url:
-            module.fail_json(msg='SSH mode selected but HTTPS URL provided')
-
-        if push_option:
-            push.insert(3, '--push-option={0} '.format(push_option))
-            return [set_url_cmd, push]
-
-        if not push_option:
-            return [set_url_cmd, push]
+    if push_option:
+        cmd_push.insert(3, '--push-option={0} '.format(push_option))
+        git_set_url(module)
+        return git_push_cmd(path, cmd_push)
 
 
 def main():
@@ -251,35 +262,31 @@ def main():
         required_if=required_if,
     )
 
-    result = dict(changed=False)
-    result_output = list()
+    url = module.params.get('url')
+    push_option = module.params.get('push_option')
+    mode = module.params.get('mode')
 
-    git_commands = git_add(module) + git_commit(module) + git_push(module)
+    if mode == 'local':
+        if url.startswith('https://') or url.startswith('git@'):
+            module.fail_json(msg='SSH or HTTPS mode selected but repo is LOCAL')
 
-    for cmd in git_commands:
-        _rc, output, error = module.run_command(cmd, cwd=module.params.get('path'))
+        if push_option:
+            module.fail_json(msg='"--push-option" not supported with mode "local"')
 
-        if output:
-            if 'no changes added to commit' in output:
-                module.fail_json(msg=output)
-            elif 'nothing to commit' in output:
-                module.fail_json(msg=output)
-            else:
-                result_output.append(output)
+    if mode == 'https':
+        if not url.startswith('https://'):
+            module.fail_json(msg='HTTPS mode selected but repo is not HTTPS')
 
-        if error:
-            if 'error' in error:
-                module.fail_json(msg=error)
-            elif 'fatal' in error:
-                module.fail_json(msg=error)
-            else:
-                result_output.append(error)
+    if mode == 'ssh':
+        if not url.startswith('git@'):
+            module.fail_json(msg='SSH mode selected but HTTPS URL provided')
 
-    if result_output:
-        result.update(output=result_output)
-        result.update(changed=True)
+    result = dict()
+    result.update(git_commit(module))
+    result.update(git_push(module))
 
-    module.exit_json(**result)
+    if result:
+        module.exit_json(**result)
 
 
 if __name__ == "__main__":

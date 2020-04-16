@@ -1,9 +1,4 @@
-(git_test_module) olivierif:git_test_module federicoolivieri$ ansible-playbook git_acp.yml -v --vault-password-file ~/.v
-No config file found; using defaults
-[WARNING]: No inventory was parsed, only implicit localhost is available
-[WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
-
-PLAY [START git commit integration tests] ****************************************************************************************************************************************************************************************************
+PLAY [START git add/commit/push integration tests] ****************************************************************************************************************************************************************************************************
 
 TASK [HTTPS | loca repo ahead.] **************************************************************************************************************************************************************************************************************
 fatal: [localhost]: FAILED! => {"changed": false, "msg": "On branch master\nYour branch is up to date with 'origin/master'.\n\nnothing to commit, working tree clean\n"}
