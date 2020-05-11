@@ -267,7 +267,7 @@ def main():
     mode = module.params.get('mode')
 
     if mode == 'local':
-        if url.startswith('https://') or url.startswith('git@'):
+        if url.startswith('https://') or url.startswith('git@') or url.startswith('ssh://git@'):
             module.fail_json(msg='SSH or HTTPS mode selected but repo is LOCAL')
 
         if push_option:
@@ -278,7 +278,7 @@ def main():
             module.fail_json(msg='HTTPS mode selected but repo is not HTTPS')
 
     if mode == 'ssh':
-        if not url.startswith('git@'):
+        if not url.startswith('git@') or not url.startswith('ssh://git@'):
             module.fail_json(msg='SSH mode selected but HTTPS URL provided')
 
     result = dict()
