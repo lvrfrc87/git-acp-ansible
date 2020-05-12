@@ -278,8 +278,8 @@ def main():
             module.fail_json(msg='HTTPS mode selected but repo is not HTTPS')
 
     if mode == 'ssh':
-        if not url.startswith('git@') or not url.startswith('ssh://git@'):
-            module.fail_json(msg='SSH mode selected but HTTPS URL provided')
+        if not url.startswith(('git@', 'ssh://git@')):
+            module.fail_json(msg='SSH mode selected but url ('+url+') not starting with git@ or ssh://git@')
 
     result = dict()
     result.update(git_commit(module))
