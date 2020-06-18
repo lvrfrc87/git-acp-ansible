@@ -1,3 +1,7 @@
+# Ver. 1.0.7
+
+- Module not failing even if git repo has nothing to commit
+
 # Ver. 1.0.6
 
 - Improve conditional logic for ssh://git@

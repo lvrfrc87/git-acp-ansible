@@ -111,7 +111,6 @@ output:
     ]
 '''
 
-import os
 from ansible.module_utils.basic import AnsibleModule
 
 
@@ -133,6 +132,33 @@ def git_add(module):
         module.fail_json(msg=error)
     if rc == 0:
         return
+
+
+def git_status(module):
+    """
+    Run git status and check if repo has changes
+    :param module:
+    :return: list of files that changes in repo
+    :rtype: set
+    """
+    data = set()
+    path = module.params.get('path')
+    cmd = [
+        'git',
+        'status',
+        '--porcelain',
+    ]
+
+    rc, output, error = module.run_command(cmd, cwd=path)
+
+    if rc != 0:
+        module.fail_json(msg=error)
+    if rc == 0:
+        for i in output.split('\n'):
+            file_name = i.split(' ')[-1].strip()
+            if file_name:
+                data.add(file_name)
+    return data
 
 
 def git_commit(module):
@@ -281,9 +307,11 @@ def main():
         if not url.startswith(('git@', 'ssh://git@')):
             module.fail_json(msg='SSH mode selected but url ('+url+') not starting with git@ or ssh://git@')
 
-    result = dict()
-    result.update(git_commit(module))
-    result.update(git_push(module))
+    result = {'changed': False}
+    changed_files = git_status(module)
+    if changed_files:
+        result.update(git_commit(module))
+        result.update(git_push(module))
 
     if result:
         module.exit_json(**result)
