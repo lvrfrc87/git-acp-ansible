@@ -149,12 +149,12 @@ def git_status(module):
         '--porcelain',
     ]
 
-    rc, _output, error = module.run_command(cmd, cwd=path)
+    rc, output, error = module.run_command(cmd, cwd=path)
 
     if rc != 0:
         module.fail_json(msg=error)
     if rc == 0:
-        for i in _output.split('\n'):
+        for i in output.split('\n'):
             file_name = i.split(' ')[-1].strip()
             if file_name:
                 data.add(file_name)
