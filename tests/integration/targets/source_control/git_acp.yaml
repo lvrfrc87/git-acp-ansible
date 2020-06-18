@@ -62,7 +62,7 @@
           url: "https://gitlab.com/networkAutomation/git_test_module.git"
         ignore_errors: yes   
     
-      - name: COMMIT FAIL | nothing to commit.
+      - name: COMMIT | nothing to commit.
         register: result
         git_acp:
           user: "{{ user }}"
@@ -73,7 +73,6 @@
           comment: Nothing to commit
           mode: https
           url: "https://gitlab.com/networkAutomation/git_test_module.git"
-        ignore_errors: yes
       - debug: var=result
       - assert: { that: "result.changed == false" }
   
