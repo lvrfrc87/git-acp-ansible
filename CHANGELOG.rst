@@ -1,3 +1,7 @@
+# Ver. 1.0.8
+
+- Add no_log to HTTPS token argument
+
 # Ver. 1.0.7
 
 - Module not failing even if git repo has nothing to commit
