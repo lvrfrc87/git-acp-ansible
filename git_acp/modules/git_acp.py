@@ -272,7 +272,7 @@ def main():
         comment=dict(required=True),
         add=dict(type='list', elements='str', default=["."]),
         user=dict(),
-        token=dict(),
+        token=dict(no_log=True),
         branch=dict(required=True),
         push_option=dict(),
         mode=dict(choices=["ssh", "https", "local"], default='ssh'),
