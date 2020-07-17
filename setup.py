@@ -9,7 +9,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="git-acp-ansible",
-    version='1.0.7',
+    version='1.0.8',
     packages=find_packages(exclude=("test*", "venv")),
     author="Federico Olivieri",
     author_email="lvrfrc87@gmail.com",
