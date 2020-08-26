@@ -1,3 +1,7 @@
+# Ver. 1.0.9
+
+- Add fail if 'ssh://' in GitHub URL when ssh mode
+
 # Ver. 1.0.8
 
 - Add no_log to HTTPS token argument
