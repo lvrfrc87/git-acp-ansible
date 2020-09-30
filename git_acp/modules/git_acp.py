@@ -177,10 +177,10 @@ def git_commit(module):
             comment,
         ]
 
-    rc, output, _error = module.run_command(commit_cmds, cwd=path)
+    rc, output, error = module.run_command(commit_cmds, cwd=path)
 
     if rc != 0:
-        module.fail_json(msg=output)
+        module.fail_json(msg=str(error) + str(output))
     if rc == 0:
         if output:
             result.update(
