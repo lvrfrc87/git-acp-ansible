@@ -66,6 +66,14 @@ options:
             - Git repo URL.
         required: True
         type: str
+    user_name:
+        description:
+            - Git config user name (git -c --user.name=<user_name>).
+        type: str
+    user_email:
+        description:
+            - Git config user email (git -c --user.email=<user_email>).
+        type: str
 requirements:
     - git>=2.10.0 (the command line tool)
 '''
@@ -177,6 +185,16 @@ def git_commit(module):
             comment,
         ]
 
+        user_email = module.params.get('user_email')
+        if user_email:
+            commit_cmds.insert(1, 'user.email=\'{0}\''.format(user_email))
+            commit_cmds.insert(1,'-c')
+
+        user_name = module.params.get('user_name')
+        if user_name:
+            commit_cmds.insert(1, 'user.name=\'{0}\''.format(user_name))
+            commit_cmds.insert(1,'-c')
+
     rc, output, error = module.run_command(commit_cmds, cwd=path)
 
     if rc != 0:
@@ -277,6 +295,8 @@ def main():
         push_option=dict(),
         mode=dict(choices=["ssh", "https", "local"], default='ssh'),
         url=dict(required=True),
+        user_name=dict(),
+        user_email=dict(),
     )
 
     required_if = [
