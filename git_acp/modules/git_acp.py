@@ -66,6 +66,11 @@ options:
             - Git repo URL.
         required: True
         type: str
+    remote:
+        description:
+            - Local system alias for git remote PUSH and PULL repository operations.
+        type: str
+        default: origin
 requirements:
     - git>=2.10.0 (the command line tool)
 '''
@@ -78,6 +83,7 @@ EXAMPLES = '''
     path: /Users/git/git_acp
     branch: master
     comment: Add file1.
+    remote: origin
     add: [ "." ]
     mode: https
     url: "https://gitlab.com/networkAutomation/git_test_module.git"
@@ -152,7 +158,7 @@ def git_status(module):
     rc, output, error = module.run_command(cmd, cwd=path)
 
     if rc != 0:
-        module.fail_json(msg=error)
+        module.fail_json(msg=error, command=run_command)
     if rc == 0:
         for i in output.split('\n'):
             file_name = i.split(' ')[-1].strip()
@@ -180,7 +186,7 @@ def git_commit(module):
     rc, output, _error = module.run_command(commit_cmds, cwd=path)
 
     if rc != 0:
-        module.fail_json(msg=output)
+        module.fail_json(msg=output, command=commit_cmds)
     if rc == 0:
         if output:
             result.update(
@@ -198,36 +204,51 @@ def git_push(module):
         mode = module.params.get('mode')
         user = module.params.get('user')
         token = module.params.get('token')
+        origin = module.params.get('remote')
 
-        if mode == 'https':
-            if url.startswith('https://'):
+        git_get_url = [
+            'git',
+            'remote',
+            'get-url',
+            '--all',
+            origin,
+        ]
+        
+        rc, output, _error = module.run_command(git_get_url, cwd=path)
+
+        if (url not in output and rc == 0) or rc !=0:
+            if mode == 'https':
+                if url.startswith('https://'):
+                    remote_add = [
+                        'git',
+                        'remote',
+                        'set-url',
+                        '--add',
+                        origin,
+                        'https://{user}:{token}@{url}'.format(
+                            url=url[8:],
+                            user=user,
+                            token=token,
+                        ),
+                    ]
+                else:
+                    module.fail_json(msg='HTTPS mode selected but not HTTPS URL provided')
+            else:
                 remote_add = [
                     'git',
                     'remote',
                     'set-url',
-                    'origin',
-                    'https://{user}:{token}@{url}'.format(
-                        url=url[8:],
-                        user=user,
-                        token=token,
-                    ),
+                    origin,
+                    url,
                 ]
-            else:
-                module.fail_json(msg='HTTPS mode selected but not HTTPS URL provided')
+
+            rc, _output, error = module.run_command(remote_add, cwd=path)
+
+            if rc != 0:
+                module.fail_json(msg=error, command=remote_add, rc=rc)
+            if rc == 0:
+                return
         else:
-            remote_add = [
-                'git',
-                'remote',
-                'set-url',
-                'origin',
-                url,
-            ]
-
-        rc, _output, error = module.run_command(remote_add, cwd=path)
-
-        if rc != 0:
-            module.fail_json(msg=error)
-        if rc == 0:
             return
 
     def git_push_cmd(path, cmd_push):
@@ -247,11 +268,13 @@ def git_push(module):
     branch = module.params.get('branch')
     push_option = module.params.get('push_option')
     path = module.params.get('path')
+    origin = module.params.get('remote')
+
 
     cmd_push = [
         'git',
         'push',
-        'origin',
+        origin,
         branch,
     ]
 
@@ -277,6 +300,7 @@ def main():
         push_option=dict(),
         mode=dict(choices=["ssh", "https", "local"], default='ssh'),
         url=dict(required=True),
+        remote=dict(default="origin"),
     )
 
     required_if = [
@@ -311,6 +335,7 @@ def main():
             module.fail_json(msg='GitHub does not support "ssh://" URL. Please remove it from url: '+url+'')
 
     result = {'changed': False}
+
     changed_files = git_status(module)
     if changed_files:
         result.update(git_commit(module))
