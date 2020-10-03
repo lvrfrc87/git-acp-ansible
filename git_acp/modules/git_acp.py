@@ -121,7 +121,17 @@ from ansible.module_utils.basic import AnsibleModule
 
 
 def git_add(module):
+    """
+    Run git add and stage changed files.
 
+    args:
+        * module:
+            type: dict()
+            descrition: Ansible basic module utilities and module arguments.
+    return:
+        * return: 
+            type: null
+    """
     add = module.params.get('add')
     path = module.params.get('path')
 
@@ -135,41 +145,58 @@ def git_add(module):
     rc, _output, error = module.run_command(add_cmds, cwd=path)
 
     if rc != 0:
-        module.fail_json(msg=error)
+        module.fail_json(rc=rc, msg=error, command=' '.join(add_cmds))
     if rc == 0:
         return
 
 
 def git_status(module):
     """
-    Run git status and check if repo has changes
-    :param module:
-    :return: list of files that changes in repo
-    :rtype: set
+    Run git status and check if repo has changes.
+
+    args:
+        * module:
+            type: dict()
+            descrition: Ansible basic module utilities and module arguments.
+    return:
+        * data: 
+            type: set()
+            description: list of files changed in repo.
     """
     data = set()
     path = module.params.get('path')
-    cmd = [
+    status_cmds = [
         'git',
         'status',
         '--porcelain',
     ]
 
-    rc, output, error = module.run_command(cmd, cwd=path)
+    rc, output, error = module.run_command(status_cmds, cwd=path)
 
     if rc != 0:
-        module.fail_json(msg=error, command=run_command)
+        module.fail_json(rc=rc, msg=error, command=' '.join(status_cmds))
     if rc == 0:
-        for i in output.split('\n'):
-            file_name = i.split(' ')[-1].strip()
+        for line in output.split('\n'):
+            file_name = line.split(' ')[-1].strip()
             if file_name:
                 data.add(file_name)
     return data
 
 
 def git_commit(module):
+    """
+    Run git commit and commit files in repo.
 
-    result = dict(changed=False)
+    args:
+        * module:
+            type: dict()
+            descrition: Ansible basic module utilities and module arguments.
+    return:
+        * result: 
+            type: dict()
+            desription: returned output from git commit command and changed status
+    """
+    result = dict()
     comment = module.params.get('comment')
     path = module.params.get('path')
 
@@ -183,10 +210,10 @@ def git_commit(module):
             comment,
         ]
 
-    rc, output, _error = module.run_command(commit_cmds, cwd=path)
+    rc, output, error = module.run_command(commit_cmds, cwd=path)
 
     if rc != 0:
-        module.fail_json(msg=output, command=commit_cmds)
+        module.fail_json(rc=rc, msg=error, command=' '.join(commit_cmds))
     if rc == 0:
         if output:
             result.update(
@@ -214,16 +241,20 @@ def git_push(module):
             origin,
         ]
         
-        rc, output, _error = module.run_command(git_get_url, cwd=path)
+        path = module.params.get('path')
 
-        if (url not in output and rc == 0) or rc !=0:
+        rc, _output, _error = module.run_command(git_get_url, cwd=path)
+
+        if rc == 0:
+            return
+        
+        if rc == 128:
             if mode == 'https':
                 if url.startswith('https://'):
                     remote_add = [
                         'git',
                         'remote',
-                        'set-url',
-                        '--add',
+                        'add',
                         origin,
                         'https://{user}:{token}@{url}'.format(
                             url=url[8:],
@@ -237,7 +268,7 @@ def git_push(module):
                 remote_add = [
                     'git',
                     'remote',
-                    'set-url',
+                    'add',
                     origin,
                     url,
                 ]
@@ -245,11 +276,10 @@ def git_push(module):
             rc, _output, error = module.run_command(remote_add, cwd=path)
 
             if rc != 0:
-                module.fail_json(msg=error, command=remote_add, rc=rc)
+                module.fail_json(msg=error, command=' '.join(remote_add), rc=rc)
             if rc == 0:
                 return
-        else:
-            return
+
 
     def git_push_cmd(path, cmd_push):
         result = dict(changed=False)
@@ -269,7 +299,6 @@ def git_push(module):
     push_option = module.params.get('push_option')
     path = module.params.get('path')
     origin = module.params.get('remote')
-
 
     cmd_push = [
         'git',
@@ -334,7 +363,7 @@ def main():
         if url.startswith('ssh://git@github.com'):
             module.fail_json(msg='GitHub does not support "ssh://" URL. Please remove it from url: '+url+'')
 
-    result = {'changed': False}
+    result = dict(changed=False)
 
     changed_files = git_status(module)
     if changed_files:
