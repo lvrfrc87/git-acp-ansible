@@ -71,6 +71,15 @@ options:
             - Local system alias for git remote PUSH and PULL repository operations.
         type: str
         default: origin
+    user_name:
+        decription:
+            - Explicit git local user name. Nice to have for remote operations.
+        type: str
+    user_email:
+        decription:
+            - Explicit git local email address. Nice to have for remote operations.
+        type: str
+
 requirements:
     - git>=2.10.0 (the command line tool)
 '''
@@ -97,6 +106,8 @@ EXAMPLES = '''
     remote: dev_test
     mode: ssh
     url: "git@gitlab.com:networkAutomation/git_test_module.git"
+    user_name: lvrfrc87
+    user_email: lvrfrc87@gmail.com
 
 - name: LOCAL | push on local repo.
   git_acp:
@@ -119,6 +130,67 @@ output:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
+
+
+def user_conifg(module):
+
+    result = dict()
+    user_name = module.params.get('user_name') 
+    user_email = module.params.get('user_email')
+    path = module.params.get('path')
+
+
+    get_name_cmd = [
+        'git',
+        'config', 
+        '--local', 
+        'user.name',
+    ]
+
+    name_cmd = [
+        'git',
+        'config', 
+        '--local', 
+        'user.name',
+        user_name
+    ]
+
+    get_email_cmd = [
+        'git',
+        'config', 
+        '--local', 
+        'user.email',
+    ]
+
+    email_cmd = [
+        'git',
+        'config', 
+        '--local', 
+        'user.email',
+        user_email
+    ]
+
+    _rc, output, _error = module.run_command(get_name_cmd, cwd=path)
+
+    if output != user_name:
+        conf_name = module.run_command(name_cmd, cwd=path)
+        
+        result.update(
+            local_user_name=conf_name,
+            changed=True
+        )
+
+    _rc, output, _error = module.run_command(get_email_cmd, cwd=path)
+
+    if output != user_email:
+        conf_email = module.run_command(email_cmd, cwd=path)
+
+        result.update(
+            local_user_email=conf_email,
+            changed=True
+        )
+
+    return result
 
 
 def git_add(module):
@@ -363,20 +435,29 @@ def main():
         mode=dict(choices=["ssh", "https", "local"], default='ssh'),
         url=dict(required=True),
         remote=dict(default="origin"),
+        user_name=dict(),
+        user_email=dict(),
     )
 
     required_if = [
         ("mode", "https", ["user", "token"]),
     ]
 
+    required_together = [
+        ["user_name", "user_email"],
+    ]
+
     module = AnsibleModule(
         argument_spec=argument_spec,
         required_if=required_if,
+        required_together=required_together,
     )
 
     url = module.params.get('url')
     push_option = module.params.get('push_option')
     mode = module.params.get('mode')
+    user_name = module.params.get('user_name')
+    user_email = module.params.get('user_email')
 
     if mode == 'local':
         if url.startswith(('https://', 'git@', 'ssh://git@')):
@@ -398,7 +479,11 @@ def main():
 
     result = dict(changed=False)
 
+    if user_name and user_email:
+        result.update(user_conifg(module))
+
     changed_files = git_status(module)
+
     if changed_files:
         result.update(git_commit(module))
         result.update(git_push(module))

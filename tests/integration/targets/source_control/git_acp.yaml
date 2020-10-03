@@ -217,6 +217,48 @@
         ignore_errors: yes
       - debug: var=result
       - assert: { that: "result.changed == false" }
+
+      - name: 10091 - SSH | set user.name and user.email
+        register: result
+        git_acp:
+          path: "{{ playbook_dir }}"
+          branch: master
+          comment: add user and email only
+          add: [ "." ]
+          mode: ssh
+          url: "git@gitlab.com:networkAutomation/git_test_module.git"
+          user_name: test_user
+          user_email: test_user@git.com
+      - debug: var=result
+      - assert: { that: "result.changed == true" }
+  
+      - name: 10092 - SETUP | debug new user.name.
+        shell: git config --local user.name
+        register: user
+      - debug: var=user
+      - assert: { that: "'test_user' in user.stdout" }
+  
+      - name: 10093 - SETUP | debug new user.email.
+        shell: git config --local user.email
+        register: email
+      - debug: var=email
+      - assert: { that: "'test_user@git.com' in email.stdout" }
+  
+      - name: 10094 - HTTPS | fail because user_name but not user_mail.
+        register: result
+        git_acp:
+          user: "{{ user }}"
+          token: "{{ token }}"
+          path: "{{ playbook_dir }}"
+          branch: master
+          comment: fail because user_name only
+          add: [ "." ]
+          mode: https
+          user_name: test_user
+          url: "git@gitlab.com:networkAutomation/git_test_module.git"
+        ignore_errors: yes
+      - debug: var=result
+      - assert: { that: "result.changed == false" }      
   
       - name: 10095 - SETUP | remove test directory.
         file: 
@@ -267,5 +309,3 @@
         ignore_errors: yes
       - debug: var=result
       - assert: { that: "result.changed == false" }
-  
-    
