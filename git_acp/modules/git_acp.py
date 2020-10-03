@@ -94,6 +94,7 @@ EXAMPLES = '''
     branch: master
     comment: Add file1.
     add: [ file1  ]
+    remote: dev_test
     mode: ssh
     url: "git@gitlab.com:networkAutomation/git_test_module.git"
 
@@ -128,24 +129,22 @@ def git_add(module):
         * module:
             type: dict()
             descrition: Ansible basic module utilities and module arguments.
-    return:
-        * return: 
-            type: null
+    return: null
     """
     add = module.params.get('add')
     path = module.params.get('path')
 
-    add_cmds = [
+    add_cmd = [
         'git',
         'add',
         '--',
     ]
-    add_cmds.extend(add)
+    add_cmd.extend(add)
 
-    rc, _output, error = module.run_command(add_cmds, cwd=path)
+    rc, _output, error = module.run_command(add_cmd, cwd=path)
 
     if rc != 0:
-        module.fail_json(rc=rc, msg=error, command=' '.join(add_cmds))
+        module.fail_json(rc=rc, msg=error, command=' '.join(add_cmd))
     if rc == 0:
         return
 
@@ -165,16 +164,16 @@ def git_status(module):
     """
     data = set()
     path = module.params.get('path')
-    status_cmds = [
+    status_cmd = [
         'git',
         'status',
         '--porcelain',
     ]
 
-    rc, output, error = module.run_command(status_cmds, cwd=path)
+    rc, output, error = module.run_command(status_cmd, cwd=path)
 
     if rc != 0:
-        module.fail_json(rc=rc, msg=error, command=' '.join(status_cmds))
+        module.fail_json(rc=rc, msg=error, command=' '.join(status_cmd))
     if rc == 0:
         for line in output.split('\n'):
             file_name = line.split(' ')[-1].strip()
@@ -203,17 +202,17 @@ def git_commit(module):
     if comment:
         git_add(module)
 
-        commit_cmds = [
+        commit_cmd = [
             'git',
             'commit',
             '-m',
             comment,
         ]
 
-    rc, output, error = module.run_command(commit_cmds, cwd=path)
+    rc, output, error = module.run_command(commit_cmd, cwd=path)
 
     if rc != 0:
-        module.fail_json(rc=rc, msg=error, command=' '.join(commit_cmds))
+        module.fail_json(rc=rc, msg=error, command=' '.join(commit_cmd))
     if rc == 0:
         if output:
             result.update(
@@ -224,16 +223,35 @@ def git_commit(module):
 
 
 def git_push(module):
+    """
+    Set URL and remote if required. Push changes to remote repo.
 
+    args:
+        * module:
+            type: dict()
+            descrition: Ansible basic module utilities and module arguments.
+    return:
+        * result: 
+            type: dict()
+            desription: returned output from git push command and updated changed status.
+    """
     def git_set_url(module):
+        """
+        Set URL and remote if required.
 
+        args:
+            * module:
+                type: dict()
+                descrition: Ansible basic module utilities and module arguments.
+        return: null
+        """
         url = module.params.get('url')
         mode = module.params.get('mode')
         user = module.params.get('user')
         token = module.params.get('token')
         origin = module.params.get('remote')
 
-        git_get_url = [
+        get_url_cmd = [
             'git',
             'remote',
             'get-url',
@@ -243,7 +261,7 @@ def git_push(module):
         
         path = module.params.get('path')
 
-        rc, _output, _error = module.run_command(git_get_url, cwd=path)
+        rc, _output, _error = module.run_command(get_url_cmd, cwd=path)
 
         if rc == 0:
             return
@@ -251,7 +269,7 @@ def git_push(module):
         if rc == 128:
             if mode == 'https':
                 if url.startswith('https://'):
-                    remote_add = [
+                    remote_add_cmd = [
                         'git',
                         'remote',
                         'add',
@@ -265,7 +283,7 @@ def git_push(module):
                 else:
                     module.fail_json(msg='HTTPS mode selected but not HTTPS URL provided')
             else:
-                remote_add = [
+                remote_add_cmd = [
                     'git',
                     'remote',
                     'add',
@@ -273,16 +291,31 @@ def git_push(module):
                     url,
                 ]
 
-            rc, _output, error = module.run_command(remote_add, cwd=path)
+            rc, _output, error = module.run_command(remote_add_cmd, cwd=path)
 
             if rc != 0:
-                module.fail_json(msg=error, command=' '.join(remote_add), rc=rc)
+                module.fail_json(msg=error, command=' '.join(remote_add_cmd), rc=rc)
             if rc == 0:
                 return
 
 
     def git_push_cmd(path, cmd_push):
-        result = dict(changed=False)
+        """
+        Set URL and remote if required. Push changes to remote repo.
+
+        args:
+            * path:
+                type: path
+                descrition: git repo local path.
+            * cmd_push:
+                type: list()
+                descrition: list of commands to perform git push operation.
+        return:
+            * result: 
+                type: dict()
+                desription: returned output from git push command and updated changed status.
+        """
+        result = dict()
 
         rc, output, error = module.run_command(cmd_push, cwd=path)
 
@@ -300,7 +333,7 @@ def git_push(module):
     path = module.params.get('path')
     origin = module.params.get('remote')
 
-    cmd_push = [
+    push_cmd = [
         'git',
         'push',
         origin,
@@ -309,12 +342,12 @@ def git_push(module):
 
     if not push_option:
         git_set_url(module)
-        return git_push_cmd(path, cmd_push)
+        return git_push_cmd(path, push_cmd)
 
     if push_option:
-        cmd_push.insert(3, '--push-option={0} '.format(push_option))
+        push_cmd.insert(3, '--push-option={0} '.format(push_option))
         git_set_url(module)
-        return git_push_cmd(path, cmd_push)
+        return git_push_cmd(path, push_cmd)
 
 
 def main():
