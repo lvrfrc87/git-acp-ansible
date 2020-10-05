@@ -1,0 +1,419 @@
+PLAY [START git acp integration tests] ***********************************************************************************************************************************************************************
+
+TASK [10000 - HTTPS | loca repo ahead.] **********************************************************************************************************************************************************************
+ok: [localhost]
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": false,
+        "failed": false
+    }
+}
+
+TASK [10005 - SSH | local repo ahead.] ***********************************************************************************************************************************************************************
+ok: [localhost]
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": false,
+        "failed": false
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10010 - SETUP | sync repo pull.] ***********************************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [10015 - SETUP | sync repo push.] ***********************************************************************************************************************************************************************
+ok: [localhost]
+
+TASK [10020 - COMMIT | nothing to commit.] *******************************************************************************************************************************************************************
+ok: [localhost]
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": false,
+        "failed": false
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10025 - ADD FAIL | add not exsisting file.] ************************************************************************************************************************************************************
+ok: [localhost]
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": false,
+        "failed": false
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10030 - SETUP | set first random file name.] ***********************************************************************************************************************************************************
+ok: [localhost]
+
+TASK [10033 - SETUP | touch file1.] **************************************************************************************************************************************************************************
+changed: [localhost] => (item=1601747051N.txt)
+
+TASK [10035 - HTTPS | add "1601747051N.txt" .] ***************************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": true,
+        "failed": false,
+        "git_commit": "[master 495f1c4] Add file1.\n 1 file changed, 0 insertions(+), 0 deletions(-)\n create mode 100644 1601747051N.txt\n",
+        "git_push": "To https://gitlab.com/networkAutomation/git_test_module.git\n   38d7b99..495f1c4  master -> master\n"
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10040 - SETUP | rm file1.] *****************************************************************************************************************************************************************************
+changed: [localhost] => (item=1601747051N.txt)
+
+TASK [10045 - SSH | add "1601747051N.txt".] ******************************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": true,
+        "failed": false,
+        "git_commit": "[master 73f5924] Add file1.\n 1 file changed, 0 insertions(+), 0 deletions(-)\n delete mode 100644 1601747051N.txt\n",
+        "git_push": "To https://gitlab.com/networkAutomation/git_test_module.git\n   495f1c4..73f5924  master -> master\n"
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10050 - SETUP | touch file1.] **************************************************************************************************************************************************************************
+changed: [localhost] => (item=1601747051N.txt)
+
+TASK [10055 - HTTPS | add "1601747051N.txt" to remote test_origin.] ******************************************************************************************************************************************
+changed: [localhost]
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": true,
+        "failed": false,
+        "git_commit": "[master 4bed7c6] Add file1.\n 1 file changed, 0 insertions(+), 0 deletions(-)\n create mode 100644 1601747051N.txt\n",
+        "git_push": "To https://gitlab.com/networkAutomation/git_test_module.git\n   73f5924..4bed7c6  master -> master\n"
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10060 - SETUP | debug new remote set.] *****************************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "remote": {
+        "changed": true,
+        "cmd": "git remote -v",
+        "delta": "0:00:00.013481",
+        "end": "2020-10-03 19:44:17.960295",
+        "failed": false,
+        "rc": 0,
+        "start": "2020-10-03 19:44:17.946814",
+        "stderr": "",
+        "stderr_lines": [],
+        "stdout": "origin\thttps://Federico87:qyPsonxRLuHmY3u1_Jpm@gitlab.com/networkAutomation/git_test_module.git (fetch)\norigin\thttps://Federico87:qyPsonxRLuHmY3u1_Jpm@gitlab.com/networkAutomation/git_test_module.git (push)\ntest_origin\thttps://Federico87:qyPsonxRLuHmY3u1_Jpm@gitlab.com/networkAutomation/git_test_module.git (fetch)\ntest_origin\thttps://Federico87:qyPsonxRLuHmY3u1_Jpm@gitlab.com/networkAutomation/git_test_module.git (push)",
+        "stdout_lines": [
+            "origin\thttps://Federico87:qyPsonxRLuHmY3u1_Jpm@gitlab.com/networkAutomation/git_test_module.git (fetch)",
+            "origin\thttps://Federico87:qyPsonxRLuHmY3u1_Jpm@gitlab.com/networkAutomation/git_test_module.git (push)",
+            "test_origin\thttps://Federico87:qyPsonxRLuHmY3u1_Jpm@gitlab.com/networkAutomation/git_test_module.git (fetch)",
+            "test_origin\thttps://Federico87:qyPsonxRLuHmY3u1_Jpm@gitlab.com/networkAutomation/git_test_module.git (push)"
+        ]
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10065 - SETUP | rm file1.] *****************************************************************************************************************************************************************************
+changed: [localhost] => (item=1601747051N.txt)
+
+TASK [10070 - SSH | remove "1601747051N.txt" to default origin.] *********************************************************************************************************************************************
+changed: [localhost]
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": true,
+        "failed": false,
+        "git_commit": "[master e193377] Add file1.\n 1 file changed, 0 insertions(+), 0 deletions(-)\n delete mode 100644 1601747051N.txt\n",
+        "git_push": "To https://gitlab.com/networkAutomation/git_test_module.git\n   4bed7c6..e193377  master -> master\n"
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10075 - SETUP | debug default remote set.] *************************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "origin": "VARIABLE IS NOT DEFINED!"
+}
+
+TASK [10080 - HTTPS | fail because ssh URL.] *****************************************************************************************************************************************************************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "HTTPS mode selected but url (git@gitlab.com:networkAutomation/git_test_module.git) is not HTTPS"}
+...ignoring
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": false,
+        "failed": true,
+        "msg": "HTTPS mode selected but url (git@gitlab.com:networkAutomation/git_test_module.git) is not HTTPS"
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10085 - SSH | fail because https URL.] *****************************************************************************************************************************************************************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "SSH mode selected but url (https://gitlab.com/networkAutomation/git_test_module.git) not starting with git@ or ssh://git@"}
+...ignoring
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": false,
+        "failed": true,
+        "msg": "SSH mode selected but url (https://gitlab.com/networkAutomation/git_test_module.git) not starting with git@ or ssh://git@"
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10090 - SSH | fail because ssh:// in GitHub.] **********************************************************************************************************************************************************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "GitHub does not support \"ssh://\" URL. Please remove it from url: ssh://git@github.com:lvrfrc87/git-acp-test.git"}
+...ignoring
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": false,
+        "failed": true,
+        "msg": "GitHub does not support \"ssh://\" URL. Please remove it from url: ssh://git@github.com:lvrfrc87/git-acp-test.git"
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10091 - SSH | set user.name and user.email] ************************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": true,
+        "failed": false,
+        "local_user_email": [
+            0,
+            "",
+            ""
+        ],
+        "local_user_name": [
+            0,
+            "",
+            ""
+        ]
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10092 - SETUP | debug new user.name.] ******************************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "user": {
+        "changed": true,
+        "cmd": "git config --local user.name",
+        "delta": "0:00:00.010460",
+        "end": "2020-10-03 19:44:21.915362",
+        "failed": false,
+        "rc": 0,
+        "start": "2020-10-03 19:44:21.904902",
+        "stderr": "",
+        "stderr_lines": [],
+        "stdout": "test_user",
+        "stdout_lines": [
+            "test_user"
+        ]
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10093 - SETUP | debug new user.email.] *****************************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "email": {
+        "changed": true,
+        "cmd": "git config --local user.email",
+        "delta": "0:00:00.011306",
+        "end": "2020-10-03 19:44:22.192760",
+        "failed": false,
+        "rc": 0,
+        "start": "2020-10-03 19:44:22.181454",
+        "stderr": "",
+        "stderr_lines": [],
+        "stdout": "test_user@git.com",
+        "stdout_lines": [
+            "test_user@git.com"
+        ]
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10094 - HTTPS | fail because user_name but not user_mail.] *********************************************************************************************************************************************
+[WARNING]: The value {'cmd': 'git config --local user.name', 'stdout': 'test_user', 'stderr': '', 'rc': 0, 'start': '2020-10-03 19:44:21.904902', 'end': '2020-10-03 19:44:21.915362', 'delta':
+'0:00:00.010460', 'changed': True, 'stdout_lines': ['test_user'], 'stderr_lines': [], 'failed': False} (type dict) in a string field was converted to "{'cmd': 'git config --local user.name', 'stdout':
+'test_user', 'stderr': '', 'rc': 0, 'start': '2020-10-03 19:44:21.904902', 'end': '2020-10-03 19:44:21.915362', 'delta': '0:00:00.010460', 'changed': True, 'stdout_lines': ['test_user'], 'stderr_lines':
+[], 'failed': False}" (type string). If this does not look like what you expect, quote the entire value to ensure it does not change.
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "parameters are required together: user_name, user_email"}
+...ignoring
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": false,
+        "failed": true,
+        "msg": "parameters are required together: user_name, user_email",
+        "warnings": [
+            "The value {'cmd': 'git config --local user.name', 'stdout': 'test_user', 'stderr': '', 'rc': 0, 'start': '2020-10-03 19:44:21.904902', 'end': '2020-10-03 19:44:21.915362', 'delta': '0:00:00.010460', 'changed': True, 'stdout_lines': ['test_user'], 'stderr_lines': [], 'failed': False} (type dict) in a string field was converted to \"{'cmd': 'git config --local user.name', 'stdout': 'test_user', 'stderr': '', 'rc': 0, 'start': '2020-10-03 19:44:21.904902', 'end': '2020-10-03 19:44:21.915362', 'delta': '0:00:00.010460', 'changed': True, 'stdout_lines': ['test_user'], 'stderr_lines': [], 'failed': False}\" (type string). If this does not look like what you expect, quote the entire value to ensure it does not change."
+        ]
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10095 - SETUP | remove test directory.] ****************************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [10100 - SETUP | create test directory.] ****************************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [10105 - SETUP | create local bare repo] ****************************************************************************************************************************************************************
+changed: [localhost] => (item=git -C ~/test_directory init --bare repo.git)
+changed: [localhost] => (item=git -C ~/test_directory clone repo.git -l )
+
+TASK [10110 - SETUP | touch file1.] **************************************************************************************************************************************************************************
+changed: [localhost] => (item=1601747051N.txt)
+
+TASK [10110 - LOCAL | push on local repo.] *******************************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": true,
+        "failed": false,
+        "git_commit": "[master (root-commit) cce8b56] Add file1.\n Committer: lvrfrc87 <olivierif@olivierif.local>\nYour name and email address were configured automatically based\non your username and hostname. Please check that they are accurate.\nYou can suppress this message by setting them explicitly:\n\n    git config --global user.name \"Your Name\"\n    git config --global user.email you@example.com\n\nAfter doing this, you may fix the identity used for this commit with:\n\n    git commit --amend --reset-author\n\n 1 file changed, 0 insertions(+), 0 deletions(-)\n create mode 100644 1601747051N.txt\n",
+        "git_push": "To /Users/olivierif/test_directory/repo.git\n * [new branch]      master -> master\n"
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [10115 - LOCAL | fail beacuse push_option] **************************************************************************************************************************************************************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "\"--push-option\" not supported with mode \"local\""}
+...ignoring
+
+TASK [debug] *************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "result": {
+        "changed": false,
+        "failed": true,
+        "msg": "\"--push-option\" not supported with mode \"local\""
+    }
+}
+
+TASK [assert] ************************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+PLAY RECAP ***************************************************************************************************************************************************************************************************
+localhost                  : ok=66   changed=19   unreachable=0    failed=0    skipped=0    rescued=0    ignored=5   

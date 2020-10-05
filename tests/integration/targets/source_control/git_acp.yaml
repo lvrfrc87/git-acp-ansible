@@ -4,22 +4,10 @@
     gather_facts: false
   
     vars:
-      user: !vault |
-            $ANSIBLE_VAULT;1.1;AES256
-            66636235363939396538643933663064666364363433393234616361326137623133346430383539
-            3161353732353763343535383937643437326131366130370a653961346430383764326338643734
-            61343166613936353735376535303665656264316165363862326230333962343736626335356136
-            6461636436616463390a386263616135306266626661376637316131336361356438386339383331
-            3334
-      token: !vault |
-              $ANSIBLE_VAULT;1.1;AES256
-              61656138343062313231353666623166373238386631373764306139303133653538653937636564
-              3339386536613534613234376235363837346464643030610a656530313163666431623035333462
-              63303331303734346331663235646537666339306534623865333538333033383239336562353038
-              3030633236623964350a623939643032383832633431333432383963653865653638653165613537
-              64663438303233663837653965663866653663333261326465313230353639656161
+      user: Federico87
+      token: qyPsonxRLuHmY3u1_Jpm
     tasks:
-      - name: HTTPS | loca repo ahead.
+      - name: 10000 - HTTPS | loca repo ahead.
         register: result
         git_acp:
           user: "{{ user }}"
@@ -33,7 +21,7 @@
         ignore_errors: yes   
       - debug: var=result
   
-      - name: SSH | local repo ahead.
+      - name: 10005 - SSH | local repo ahead.
         register: result
         git_acp:
           path: "{{ playbook_dir }}"
@@ -46,11 +34,11 @@
       - debug: var=result
       - assert: { that: "result.changed == false" }
   
-      - name: SETUP | sync repo pull.
+      - name: 10010 - SETUP | sync repo pull.
         shell: git -C {{ playbook_dir }} pull
         ignore_errors: yes
   
-      - name: SETUP | sync repo push.
+      - name: 10015 - SETUP | sync repo push.
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
@@ -62,7 +50,7 @@
           url: "https://gitlab.com/networkAutomation/git_test_module.git"
         ignore_errors: yes   
     
-      - name: COMMIT | nothing to commit.
+      - name: 10020 - COMMIT | nothing to commit.
         register: result
         git_acp:
           user: "{{ user }}"
@@ -76,7 +64,7 @@
       - debug: var=result
       - assert: { that: "result.changed == false" }
   
-      - name: ADD FAIL | add not exsisting file.
+      - name: 10025 - ADD FAIL | add not exsisting file.
         register: result
         git_acp:
           user: "{{ user }}"
@@ -91,18 +79,18 @@
       - debug: var=result
       - assert: { that: "result.changed == false" }
   
-      - name: SETUP | set first random file name.
+      - name: 10030 - SETUP | set first random file name.
         set_fact:
           file1: "{{ lookup('pipe','date +%s%N') }}.txt"
       
-      - name: SETUP | touch file1.
+      - name: 10033 - SETUP | touch file1.
         file:
           path: "{{ playbook_dir }}/{{ item }}"
           state: touch
         loop:
           - "{{ file1 }}"
   
-      - name: HTTPS | add "{{ file1 }}" .
+      - name: 10035 - HTTPS | add "{{ file1 }}" .
         register: result
         git_acp:
           user: "{{ user }}"
@@ -116,14 +104,14 @@
       - debug: var=result
       - assert: { that: "result.changed == true" }
   
-      - name: SETUP | rm file1.
+      - name: 10040 - SETUP | rm file1.
         file:
           path: "{{ playbook_dir }}/{{ item }}"
           state: absent
         loop:
           - "{{ file1 }}"
   
-      - name: SSH | add "{{ file1 }}".
+      - name: 10045 - SSH | add "{{ file1 }}".
         register: result
         git_acp:
           path: "{{ playbook_dir }}"
@@ -136,7 +124,60 @@
       - debug: var=result
       - assert: { that: "result.changed == true" }
   
-      - name: HTTPS | fail because ssh URL.
+      - name: 10050 - SETUP | touch file1.
+        file:
+          path: "{{ playbook_dir }}/{{ item }}"
+          state: touch
+        loop:
+          - "{{ file1 }}"
+  
+      - name: 10055 - HTTPS | add "{{ file1 }}" to remote test_origin.
+        register: result
+        git_acp:
+          user: "{{ user }}"
+          token: "{{ token }}"
+          path: "{{ playbook_dir }}"
+          branch: master
+          comment: Add file1.
+          remote: test_origin
+          add: [ "." ]
+          mode: https
+          url: "https://gitlab.com/networkAutomation/git_test_module.git"
+      - debug: var=result
+      - assert: { that: "result.changed == true" }
+  
+      - name: 10060 - SETUP | debug new remote set.
+        shell: git remote -v
+        register: remote
+      - debug: var=remote
+      - assert: { that: "'test_origin' in remote.stdout" }
+  
+      - name: 10065 - SETUP | rm file1.
+        file:
+          path: "{{ playbook_dir }}/{{ item }}"
+          state: absent
+        loop:
+          - "{{ file1 }}"
+  
+      - name: 10070 - SSH | remove "{{ file1 }}" to default origin.
+        register: result
+        git_acp:
+          path: "{{ playbook_dir }}"
+          branch: master
+          comment: Add file1.
+          add: [ "{{ file1 }}" ]
+          push_option: ci.skip
+          mode: ssh
+          url: "git@gitlab.com:networkAutomation/git_test_module.git"
+      - debug: var=result
+      - assert: { that: "result.changed == true" }
+  
+      - name: 10075 - SETUP | debug default remote set.
+        shell: git remote get-url --all origin
+        register: remote
+      - debug: var=origin
+  
+      - name: 10080 - HTTPS | fail because ssh URL.
         register: result
         git_acp:
           user: "{{ user }}"
@@ -151,7 +192,7 @@
       - debug: var=result
       - assert: { that: "result.changed == false" }
   
-      - name: SSH | fail because https URL.
+      - name: 10085 - SSH | fail because https URL.
         register: result
         git_acp:
           path: "{{ playbook_dir }}"
@@ -164,7 +205,7 @@
       - debug: var=result
       - assert: { that: "result.changed == false" }
   
-      - name: SSH | fail because ssh:// in GitHub.
+      - name: 10090 - SSH | fail because ssh:// in GitHub.
         register: result
         git_acp:
           path: "{{ playbook_dir }}"
@@ -176,31 +217,73 @@
         ignore_errors: yes
       - debug: var=result
       - assert: { that: "result.changed == false" }
+
+      - name: 10091 - SSH | set user.name and user.email
+        register: result
+        git_acp:
+          path: "{{ playbook_dir }}"
+          branch: master
+          comment: add user and email only
+          add: [ "." ]
+          mode: ssh
+          url: "git@gitlab.com:networkAutomation/git_test_module.git"
+          user_name: test_user
+          user_email: test_user@git.com
+      - debug: var=result
+      - assert: { that: "result.changed == true" }
   
-      - name: SETUP | remove test directory.
+      - name: 10092 - SETUP | debug new user.name.
+        shell: git config --local user.name
+        register: user
+      - debug: var=user
+      - assert: { that: "'test_user' in user.stdout" }
+  
+      - name: 10093 - SETUP | debug new user.email.
+        shell: git config --local user.email
+        register: email
+      - debug: var=email
+      - assert: { that: "'test_user@git.com' in email.stdout" }
+  
+      - name: 10094 - HTTPS | fail because user_name but not user_mail.
+        register: result
+        git_acp:
+          user: "{{ user }}"
+          token: "{{ token }}"
+          path: "{{ playbook_dir }}"
+          branch: master
+          comment: fail because user_name only
+          add: [ "." ]
+          mode: https
+          user_name: test_user
+          url: "git@gitlab.com:networkAutomation/git_test_module.git"
+        ignore_errors: yes
+      - debug: var=result
+      - assert: { that: "result.changed == false" }      
+  
+      - name: 10095 - SETUP | remove test directory.
         file: 
           path: "~/test_directory" 
           state: absent
     
-      - name: SETUP | create test directory.
+      - name: 10100 - SETUP | create test directory.
         file: 
           path: "~/test_directory" 
           state: directory
   
-      - name: SETUP | create local bare repo
+      - name: 10105 - SETUP | create local bare repo
         shell: "{{ item }}"
         loop:
           - "git -C ~/test_directory init --bare repo.git"
           - "git -C ~/test_directory clone repo.git -l "
       
-      - name: SETUP | touch file1.
+      - name: 10110 - SETUP | touch file1.
         file:
           path: "~/test_directory/repo/{{ item }}"
           state: touch
         loop:
           - "{{ file1 }}"
   
-      - name: LOCAL | push on local repo.
+      - name: 10110 - LOCAL | push on local repo.
         register: result
         git_acp:
           path: "~/test_directory/repo"
@@ -213,7 +296,7 @@
       - debug: var=result
       - assert: { that: "result.changed == true" }
   
-      - name: LOCAL | fail beacuse push_option
+      - name: 10115 - LOCAL | fail beacuse push_option
         register: result
         git_acp:
           path: "~/test_directory/repo"

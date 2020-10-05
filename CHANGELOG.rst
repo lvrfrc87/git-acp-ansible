@@ -1,3 +1,12 @@
+# Ver. 1.1.0
+
+- Add idempotency for `git remote add`  command
+- Add support for custom `remote` repo alias (i.e. origin)
+- Improved returned module messages
+- Add support for `git config user.name` and `user.email`
+- Add doc strings to each function
+- Improve variable name
+
 # Ver. 1.0.9
 
 - Add fail if 'ssh://' in GitHub URL when ssh mode
