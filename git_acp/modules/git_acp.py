@@ -139,7 +139,6 @@ def user_conifg(module):
     user_email = module.params.get('user_email')
     path = module.params.get('path')
 
-
     get_name_cmd = [
         'git',
         'config', 
@@ -147,13 +146,22 @@ def user_conifg(module):
         'user.name',
     ]
 
-    name_cmd = [
-        'git',
-        'config', 
-        '--local', 
-        'user.name',
-        user_name
-    ]
+    _rc, output, _error = module.run_command(get_name_cmd, cwd=path)
+    if output != user_name:
+
+        name_cmd = [
+            'git',
+            'config', 
+            '--local', 
+            'user.name',
+            user_name
+        ]
+
+        conf_name = module.run_command(name_cmd, cwd=path)
+        result.update(
+            local_user_name=conf_name,
+            changed=True
+        )
 
     get_email_cmd = [
         'git',
@@ -162,29 +170,18 @@ def user_conifg(module):
         'user.email',
     ]
 
-    email_cmd = [
-        'git',
-        'config', 
-        '--local', 
-        'user.email',
-        user_email
-    ]
-
-    _rc, output, _error = module.run_command(get_name_cmd, cwd=path)
-
-    if output != user_name:
-        conf_name = module.run_command(name_cmd, cwd=path)
-        
-        result.update(
-            local_user_name=conf_name,
-            changed=True
-        )
-
     _rc, output, _error = module.run_command(get_email_cmd, cwd=path)
-
     if output != user_email:
-        conf_email = module.run_command(email_cmd, cwd=path)
 
+        email_cmd = [
+            'git',
+            'config', 
+            '--local', 
+            'user.email',
+            user_email
+        ]
+
+        conf_email = module.run_command(email_cmd, cwd=path)
         result.update(
             local_user_email=conf_email,
             changed=True
