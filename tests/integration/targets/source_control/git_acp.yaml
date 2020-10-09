@@ -5,7 +5,7 @@
   
     vars:
       user: Federico87
-      token: qyPsonxRLuHmY3u1_Jpm
+      token: ryHGYzQsWLidc_Ws7m_y
     tasks:
       - name: 10000 - HTTPS | loca repo ahead.
         register: result
