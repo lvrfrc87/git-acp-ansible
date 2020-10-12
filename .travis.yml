@@ -1,0 +1,22 @@
+dist: "xenial"
+
+language: "python"
+python: "3.7"
+
+env:
+#   - ANSIBLE_VERSION=latest
+    - ANSIBLE_VERSION=2.9.5
+
+branches:
+    only:
+    - master
+    - dev
+
+before_install:
+    - sudo apt-get update -qq
+
+install:
+    - if [ "$ANSIBLE_VERSION" = "latest" ]; then pip install ansible; else pip install ansible==$ANSIBLE_VERSION; fi
+
+script:
+    - ansible-playbook tests/integration/targets/source_control/git_acp.yaml -vvv

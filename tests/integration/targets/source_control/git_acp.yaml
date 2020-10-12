@@ -4,10 +4,21 @@
     gather_facts: false
   
     vars:
-      user: Federico87
-      token: qyPsonxRLuHmY3u1_Jpm
+      user: "Federico87"
+      token: "ryHGYzQsWLidc_Ws7m_y"
+      working_dir: "$HOME/git_acp_test/"
+
     tasks:
-      - name: 10000 - HTTPS | loca repo ahead.
+      - name: 10000 - SETUP | clone repo.
+        git:
+          repo: "https://{{ user }}:{{ token }}@gitlab.com/networkAutomation/git_test_module.git"
+          dest: "{{ working_dir }}"
+
+      - name: 10003 - SETUP | sync repo pull.
+        shell: git -C {{ playbook_dir }} pull
+        ignore_errors: yes
+
+      - name: 10005 - SETUP | https loca repo ahead.
         register: result
         git_acp:
           user: "{{ user }}"
@@ -20,8 +31,8 @@
           url: "https://gitlab.com/networkAutomation/git_test_module.git"
         ignore_errors: yes   
       - debug: var=result
-  
-      - name: 10005 - SSH | local repo ahead.
+
+      - name: 10010 - SETUP | ssh local repo ahead.
         register: result
         git_acp:
           path: "{{ playbook_dir }}"
@@ -33,11 +44,7 @@
         ignore_errors: yes   
       - debug: var=result
       - assert: { that: "result.changed == false" }
-  
-      - name: 10010 - SETUP | sync repo pull.
-        shell: git -C {{ playbook_dir }} pull
-        ignore_errors: yes
-  
+
       - name: 10015 - SETUP | sync repo push.
         git_acp:
           user: "{{ user }}"
@@ -55,9 +62,9 @@
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
-          add: ["."]
+          add: [ "." ]
           comment: Nothing to commit
           mode: https
           url: "https://gitlab.com/networkAutomation/git_test_module.git"
@@ -69,7 +76,7 @@
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: Add not existing file
           add: [ i_do_not_exsisit.txt ]
@@ -85,17 +92,17 @@
       
       - name: 10033 - SETUP | touch file1.
         file:
-          path: "{{ playbook_dir }}/{{ item }}"
+          path: "{{ working_dir }}/{{ item }}"
           state: touch
         loop:
           - "{{ file1 }}"
-  
+
       - name: 10035 - HTTPS | add "{{ file1 }}" .
         register: result
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: Add file1.
           add: [ "." ]
@@ -106,15 +113,15 @@
   
       - name: 10040 - SETUP | rm file1.
         file:
-          path: "{{ playbook_dir }}/{{ item }}"
+          path: "{{ working_dir }}/{{ item }}"
           state: absent
         loop:
           - "{{ file1 }}"
-  
+
       - name: 10045 - SSH | add "{{ file1 }}".
         register: result
         git_acp:
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: Add file1.
           add: [ "{{ file1 }}" ]
@@ -126,7 +133,7 @@
   
       - name: 10050 - SETUP | touch file1.
         file:
-          path: "{{ playbook_dir }}/{{ item }}"
+          path: "{{ working_dir }}/{{ item }}"
           state: touch
         loop:
           - "{{ file1 }}"
@@ -136,25 +143,26 @@
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: Add file1.
           remote: test_origin
-          add: [ "." ]
+          add: 
+            - "."
           mode: https
           url: "https://gitlab.com/networkAutomation/git_test_module.git"
       - debug: var=result
       - assert: { that: "result.changed == true" }
   
       - name: 10060 - SETUP | debug new remote set.
-        shell: git remote -v
+        shell: git -C "{{ working_dir }}" remote -v
         register: remote
       - debug: var=remote
       - assert: { that: "'test_origin' in remote.stdout" }
   
       - name: 10065 - SETUP | rm file1.
         file:
-          path: "{{ playbook_dir }}/{{ item }}"
+          path: "{{ working_dir }}/{{ item }}"
           state: absent
         loop:
           - "{{ file1 }}"
@@ -162,7 +170,7 @@
       - name: 10070 - SSH | remove "{{ file1 }}" to default origin.
         register: result
         git_acp:
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: Add file1.
           add: [ "{{ file1 }}" ]
@@ -182,7 +190,7 @@
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: fail because ssh URL
           add: [ "." ]
@@ -195,7 +203,7 @@
       - name: 10085 - SSH | fail because https URL.
         register: result
         git_acp:
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: fail because https URL
           add: [ "." ]
@@ -208,7 +216,7 @@
       - name: 10090 - SSH | fail because ssh:// in GitHub.
         register: result
         git_acp:
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: fail because ssh in GitHub
           add: [ "." ]
@@ -221,7 +229,7 @@
       - name: 10091 - SSH | set user.name and user.email
         register: result
         git_acp:
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: add user and email only
           add: [ "." ]
@@ -233,13 +241,13 @@
       - assert: { that: "result.changed == true" }
   
       - name: 10092 - SETUP | debug new user.name.
-        shell: git config --local user.name
+        shell: git -C {{ working_dir }} config --local user.name
         register: user
       - debug: var=user
       - assert: { that: "'test_user' in user.stdout" }
   
       - name: 10093 - SETUP | debug new user.email.
-        shell: git config --local user.email
+        shell: git -C {{ working_dir }} config --local user.email
         register: email
       - debug: var=email
       - assert: { that: "'test_user@git.com' in email.stdout" }
@@ -249,7 +257,7 @@
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: fail because user_name only
           add: [ "." ]
@@ -262,23 +270,23 @@
   
       - name: 10095 - SETUP | remove test directory.
         file: 
-          path: "~/test_directory" 
+          path: "{{ working_dir }}/test_directory" 
           state: absent
     
       - name: 10100 - SETUP | create test directory.
         file: 
-          path: "~/test_directory" 
+          path: "{{ working_dir }}/test_directory" 
           state: directory
   
       - name: 10105 - SETUP | create local bare repo
         shell: "{{ item }}"
         loop:
-          - "git -C ~/test_directory init --bare repo.git"
-          - "git -C ~/test_directory clone repo.git -l "
+          - "git -C {{ working_dir }}/test_directory init --bare repo.git"
+          - "git -C {{ working_dir }}/test_directory clone repo.git -l"
       
       - name: 10110 - SETUP | touch file1.
         file:
-          path: "~/test_directory/repo/{{ item }}"
+          path: "{{ working_dir }}/test_directory/repo/{{ item }}"
           state: touch
         loop:
           - "{{ file1 }}"
@@ -286,12 +294,12 @@
       - name: 10110 - LOCAL | push on local repo.
         register: result
         git_acp:
-          path: "~/test_directory/repo"
+          path: "{{ working_dir }}/test_directory/repo"
           branch: master
           comment: Add file1.
           add: [ "{{ file1 }}" ]
           mode: local
-          url: /Users/federicoolivieri/test_directory/repo.git
+          url: "{{ working_dir }}/test_directory/repo.git"
         ignore_errors: yes
       - debug: var=result
       - assert: { that: "result.changed == true" }
@@ -299,13 +307,21 @@
       - name: 10115 - LOCAL | fail beacuse push_option
         register: result
         git_acp:
-          path: "~/test_directory/repo"
+          path: "{{ working_dir }}/test_directory/repo"
           branch: master
           comment: Add file1.
           add: [ "{{ file1 }}" ]
           mode: local
-          url: /Users/federicoolivieri/test_directory/repo.git
+          url: "{{ working_dir }}/test_directory/repo.git"
           push_option: ci.skip
         ignore_errors: yes
       - debug: var=result
       - assert: { that: "result.changed == false" }
+
+      - name: 10120 - SETUP | delete test file.
+        file:
+          path: "{{ working_dir }}/{{ item }}"
+          state: absent
+        ignore_errors: yes
+        loop:
+          - "{{ file1 }}"
