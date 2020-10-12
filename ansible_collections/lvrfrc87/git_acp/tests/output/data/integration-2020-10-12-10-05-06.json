@@ -1,0 +1,26 @@
+{
+    "targets": {
+        "source_control": {
+            "aliases": [
+                "non_destructive/",
+                "non_destructive/source_control",
+                "non_module/",
+                "non_module/source_control",
+                "posix/",
+                "role/",
+                "role/source_control",
+                "source_control"
+            ],
+            "coverage": false,
+            "coverage_label": "",
+            "modules": [],
+            "name": "source_control",
+            "python_version": "3.8",
+            "run_time_seconds": 2,
+            "setup_always": [],
+            "setup_once": [],
+            "type": "role",
+            "validation_seconds": 0
+        }
+    }
+}

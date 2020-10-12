@@ -135,14 +135,14 @@ from ansible.module_utils.basic import AnsibleModule
 def user_conifg(module):
 
     result = dict()
-    user_name = module.params.get('user_name') 
+    user_name = module.params.get('user_name')
     user_email = module.params.get('user_email')
     path = module.params.get('path')
 
     get_name_cmd = [
         'git',
-        'config', 
-        '--local', 
+        'config',
+        '--local',
         'user.name',
     ]
 
@@ -151,8 +151,8 @@ def user_conifg(module):
 
         name_cmd = [
             'git',
-            'config', 
-            '--local', 
+            'config',
+            '--local',
             'user.name',
             user_name
         ]
@@ -165,8 +165,8 @@ def user_conifg(module):
 
     get_email_cmd = [
         'git',
-        'config', 
-        '--local', 
+        'config',
+        '--local',
         'user.email',
     ]
 
@@ -175,8 +175,8 @@ def user_conifg(module):
 
         email_cmd = [
             'git',
-            'config', 
-            '--local', 
+            'config',
+            '--local',
             'user.email',
             user_email
         ]
@@ -227,7 +227,7 @@ def git_status(module):
             type: dict()
             descrition: Ansible basic module utilities and module arguments.
     return:
-        * data: 
+        * data:
             type: set()
             description: list of files changed in repo.
     """
@@ -260,7 +260,7 @@ def git_commit(module):
             type: dict()
             descrition: Ansible basic module utilities and module arguments.
     return:
-        * result: 
+        * result:
             type: dict()
             desription: returned output from git commit command and changed status
     """
@@ -300,7 +300,7 @@ def git_push(module):
             type: dict()
             descrition: Ansible basic module utilities and module arguments.
     return:
-        * result: 
+        * result:
             type: dict()
             desription: returned output from git push command and updated changed status.
     """
@@ -327,14 +327,14 @@ def git_push(module):
             '--all',
             origin,
         ]
-        
+
         path = module.params.get('path')
 
         rc, _output, _error = module.run_command(get_url_cmd, cwd=path)
 
         if rc == 0:
             return
-        
+
         if rc == 128:
             if mode == 'https':
                 if url.startswith('https://'):
@@ -367,7 +367,6 @@ def git_push(module):
             if rc == 0:
                 return
 
-
     def git_push_cmd(path, cmd_push):
         """
         Set URL and remote if required. Push changes to remote repo.
@@ -380,7 +379,7 @@ def git_push(module):
                 type: list()
                 descrition: list of commands to perform git push operation.
         return:
-            * result: 
+            * result:
                 type: dict()
                 desription: returned output from git push command and updated changed status.
         """
@@ -465,14 +464,14 @@ def main():
 
     if mode == 'https':
         if not url.startswith('https://'):
-            module.fail_json(msg='HTTPS mode selected but url ('+url+') is not HTTPS')
+            module.fail_json(msg='HTTPS mode selected but url (' + url + ') is not HTTPS')
 
     if mode == 'ssh':
         if not url.startswith(('git@', 'ssh://git@')):
-            module.fail_json(msg='SSH mode selected but url ('+url+') not starting with git@ or ssh://git@')
+            module.fail_json(msg='SSH mode selected but url (' + url + ') not starting with git@ or ssh://git@')
 
         if url.startswith('ssh://git@github.com'):
-            module.fail_json(msg='GitHub does not support "ssh://" URL. Please remove it from url: '+url+'')
+            module.fail_json(msg='GitHub does not support "ssh://" URL. Please remove it from url')
 
     result = dict(changed=False)
 
