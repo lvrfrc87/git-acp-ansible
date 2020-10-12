@@ -19,8 +19,7 @@ install:
   - if [ "$ANSIBLE_VERSION" = "latest" ]; then pip install ansible; else pip install ansible==$ANSIBLE_VERSION; fi
 
 before_install:
-  - mkdir -p ansible_collections/$COLLECTION_NAMESPACE
-  - mv ansible-collection-$COLLECTION_NAME ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
+  - mkdir -p ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
   - cd ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
 
 script:
