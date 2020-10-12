@@ -85,7 +85,7 @@
       
       - name: 10033 - SETUP | touch file1.
         file:
-          path: ""$HOME"/{{ item }}"
+          path: "$HOME/{{ item }}"
           state: touch
         loop:
           - "{{ file1 }}"
