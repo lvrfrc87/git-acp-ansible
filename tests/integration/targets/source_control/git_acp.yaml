@@ -4,7 +4,7 @@
     gather_facts: false
   
     vars:
-      user: "{{ lookup('env', 'GIT_USER') }}"
+      user: "Federico87"
       token: "{{ lookup('env', 'GIT_TOKEN') }}"
       working_dir: "$HOME/git_acp_test/"
 
