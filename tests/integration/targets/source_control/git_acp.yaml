@@ -14,6 +14,10 @@
           repo: "https://{{ user }}:{{ token }}@gitlab.com/networkAutomation/git_test_module.git"
           dest: "{{ working_dir }}"
 
+      - name: 10003 - SETUP | sync repo pull.
+        shell: git -C {{ playbook_dir }} pull
+        ignore_errors: yes
+
       - name: 10005 - SETUP | https loca repo ahead.
         register: result
         git_acp:
@@ -41,11 +45,7 @@
       - debug: var=result
       - assert: { that: "result.changed == false" }
 
-      - name: 10015 - SETUP | sync repo pull.
-        shell: git -C {{ playbook_dir }} pull
-        ignore_errors: yes
-
-      - name: 10017 - SETUP | sync repo push.
+      - name: 10015 - SETUP | sync repo push.
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
