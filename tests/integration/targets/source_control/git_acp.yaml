@@ -154,7 +154,7 @@
   
       - name: 10065 - SETUP | rm file1.
         file:
-          path: ""$HOME"/{{ item }}"
+          path: "$HOME/{{ item }}"
           state: absent
         loop:
           - "{{ file1 }}"
