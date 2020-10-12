@@ -111,6 +111,16 @@
         loop:
           - "{{ file1 }}"
   
+      - command: "{{ item }}"
+        loop: 
+          - "ls -la {{ playbook_dir }"
+          - "$PWD"
+          - "find / -name {{ file1 }}"
+        register: result
+
+      - debug: var=result
+    
+
       - name: 10045 - SSH | add "{{ file1 }}".
         register: result
         git_acp:
