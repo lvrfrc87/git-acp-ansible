@@ -4,60 +4,22 @@
     gather_facts: false
   
     vars:
-      user: Federico87
-      token: ryHGYzQsWLidc_Ws7m_y
+      user: "Federico87"
+      token: "ryHGYzQsWLidc_Ws7m_y"
     tasks:
-      - name: 10000 - HTTPS | loca repo ahead.
-        register: result
-        git_acp:
-          user: "{{ user }}"
-          token: "{{ token }}"
-          path: "{{ playbook_dir }}"
-          branch: master
-          add: ["."]
-          comment: Local repo ahead
-          mode: https
-          url: "https://gitlab.com/networkAutomation/git_test_module.git"
-        ignore_errors: yes   
-      - debug: var=result
-  
-      - name: 10005 - SSH | local repo ahead.
-        register: result
-        git_acp:
-          path: "{{ playbook_dir }}"
-          branch: master
-          add: ["."]
-          comment: Local repo ahead
-          mode: ssh
-          url: "git@gitlab.com:networkAutomation/git_test_module.git"
-        ignore_errors: yes   
-      - debug: var=result
-      - assert: { that: "result.changed == false" }
-  
-      - name: 10010 - SETUP | sync repo pull.
-        shell: git -C {{ playbook_dir }} pull
-        ignore_errors: yes
-  
-      - name: 10015 - SETUP | sync repo push.
-        git_acp:
-          user: "{{ user }}"
-          token: "{{ token }}"
-          path: "{{ playbook_dir }}"
-          branch: master
-          add: ["."]
-          comment: Synch repos
-          mode: https
-          url: "https://gitlab.com/networkAutomation/git_test_module.git"
-        ignore_errors: yes   
-    
+      - name: 10000 - SETUP | clone repo.
+        git:
+          repo: "https://{{ user }}:{{ token }}@gitlab.com/networkAutomation/git_test_module.git"
+          dest: "$HOME"
+
       - name: 10020 - COMMIT | nothing to commit.
         register: result
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
-          path: "{{ playbook_dir }}"
+          path: "$HOME"
           branch: master
-          add: ["."]
+          add: [ "." ]
           comment: Nothing to commit
           mode: https
           url: "https://gitlab.com/networkAutomation/git_test_module.git"
@@ -98,8 +60,7 @@
           path: "{{ playbook_dir }}"
           branch: master
           comment: Add file1.
-          add: 
-            - "{{ file1 }}"
+          add: [ "." ]
           mode: https
           url: "https://gitlab.com/networkAutomation/git_test_module.git"
       - debug: var=result
@@ -141,7 +102,8 @@
           branch: master
           comment: Add file1.
           remote: test_origin
-          add: [ "." ]
+          add: 
+            - "."
           mode: https
           url: "https://gitlab.com/networkAutomation/git_test_module.git"
       - debug: var=result
