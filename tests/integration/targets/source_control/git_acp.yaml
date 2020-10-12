@@ -114,7 +114,7 @@
       - command: "{{ item }}"
         loop: 
           - "ls -la {{ playbook_dir }}"
-          - "$PWD"
+          - "echo $PWD"
           - "find / -name {{ file1 }}"
         register: result
 
@@ -319,3 +319,11 @@
         ignore_errors: yes
       - debug: var=result
       - assert: { that: "result.changed == false" }
+
+      - name: 10120 - SETUP | delete test file.
+        file:
+          path: "{{ playbook_dir }}/{{ item }}"
+          state: absent
+        ignore_errors: yes
+        loop:
+          - "{{ file1 }}"
