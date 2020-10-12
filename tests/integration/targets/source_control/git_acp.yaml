@@ -14,6 +14,49 @@
           repo: "https://{{ user }}:{{ token }}@gitlab.com/networkAutomation/git_test_module.git"
           dest: "{{ working_dir }}"
 
+      - name: 10005 - SETUP | https loca repo ahead.
+        register: result
+        git_acp:
+          user: "{{ user }}"
+          token: "{{ token }}"
+          path: "{{ playbook_dir }}"
+          branch: master
+          add: ["."]
+          comment: Local repo ahead
+          mode: https
+          url: "https://gitlab.com/networkAutomation/git_test_module.git"
+        ignore_errors: yes   
+      - debug: var=result
+
+      - name: 10010 - SETUP | ssh local repo ahead.
+        register: result
+        git_acp:
+          path: "{{ playbook_dir }}"
+          branch: master
+          add: ["."]
+          comment: Local repo ahead
+          mode: ssh
+          url: "git@gitlab.com:networkAutomation/git_test_module.git"
+        ignore_errors: yes   
+      - debug: var=result
+      - assert: { that: "result.changed == false" }
+
+      - name: 10015 - SETUP | sync repo pull.
+        shell: git -C {{ playbook_dir }} pull
+        ignore_errors: yes
+
+      - name: 10017 - SETUP | sync repo push.
+        git_acp:
+          user: "{{ user }}"
+          token: "{{ token }}"
+          path: "{{ playbook_dir }}"
+          branch: master
+          add: ["."]
+          comment: Synch repos
+          mode: https
+          url: "https://gitlab.com/networkAutomation/git_test_module.git"
+        ignore_errors: yes   
+    
       - name: 10020 - COMMIT | nothing to commit.
         register: result
         git_acp:
