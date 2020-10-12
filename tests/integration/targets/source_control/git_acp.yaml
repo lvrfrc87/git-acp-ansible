@@ -112,7 +112,7 @@
       - assert: { that: "result.changed == true" }
   
       - name: 10060 - SETUP | debug new remote set.
-        shell: git remote -v
+        shell: git -C "{{ working_dir }}" remote -v
         register: remote
       - debug: var=remote
       - assert: { that: "'test_origin' in remote.stdout" }
