@@ -17,4 +17,4 @@ install:
 - if [ "$ANSIBLE_VERSION" = "latest" ]; then pip install ansible; else pip install
   ansible==$ANSIBLE_VERSION; fi
 script:
-- ansible-playbook tests/integration/targets/source_control/git_acp.yaml -vv
+- ansible-playbook tests/integration/targets/source_control/git_acp.yaml -vvv
