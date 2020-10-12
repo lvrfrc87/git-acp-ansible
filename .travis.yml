@@ -1,32 +1,25 @@
 dist: xenial
 language: python
 python: '3.7'
+
 env:
   matrix:
-  - ANSIBLE_VERSION=latest
-  - ANSIBLE_VERSION=2.9.5
+    - ANSIBLE_VERSION=2.10.0
+    - ANSIBLE_VERSION=2.9.5
   global:
-  - secure: 0RxL5VAU2M8b5OuGWILrvN1EMs5XIYgZzlJ6vOX1lTtLcwYwhFTIkf/wAqmTWN6jroOagCnc4YSF4TUX7BTJVvVjF/ABdqyKYzPjt9e9UmlhNFWkvyy9NvIQlflHWqlRYHi8ZBoBrunZnYN9sg/37osU4wSX0B65FgOG6HJ8VU+wiV7vMqooSA3+mnTvKQGFQO/vDxMEW860o8WhoZy9Ao0ZCORjieSECxetsX8//83Vqnv1RmljCz9tYdcMd//RMwW0ThmbK06ZkVI+W4oWmHYIhucvpeBlhK8b5oW2JzCsa6sg8fsTEfQvWLTNyl2dO0xb7zsj9pJbSh/7FKVc4rkHs6FPEIw5nw17A75HP+PigXBQRc24Rhj07udFsUkmD5qhlC/MG9XZGQU3g+n9LKTK0eXID/wFg3a6a90g620DtuIEYp7pQIMuNM735jlNg6jBVvp8ot+I5nyR3QMe6eWwUwk6oYMBaIAU/MNkKwHwgX8wRpqHFObBFJn71n5d8Dj6pJrXSC+/BXfGhX+2NJFqc1E+FHW4CVNFOU7RdW+/Djurihy5URRP8rvXqjW42e9nhIKyfpxT8hmMTqAZX1uRjw4TGA0lHTPbjLWiojx7dluK3cDd81Z69uA+6JGzN2tHUA7kDz3ocq/0aMFJM+jXIQMkybvC3KAdiDASmbk=
-  - secure: CG7OpPZFRei1rAAQYCgiL6FP9+zIKK6epgEScWwzN1GZauQJSQodBRQO/5eeJEjHrNvNQ/F8w4XTZ6W9HRTumWVeR4+SR9Z7Xi4NaL0wz9/jRrG8cKXnpYsr6p3gpdOz6NVjk6NgczonPCHYKJXnX5GzncOJqIKDljXUNm4DaJvnyCgjWkrlCCtCqqz74EUFN+oDNVoI1xq6rDGYUt9Rjh8ajxa+gISXPZLWcLPBSSAsXATrxQ2tpJRgLH/aY+8FCo7uJ1UqYwpKFDGVW5w9o+WLVvLg9dnpiNnlUKz396BtpE1085W4WEpcZsb8kK0LYfioakwGB2hHiJ9HXzYWJbQJmqaq8qcwF9hAmCgbcgkg6zboJicIHatHfjd1p8Y5pZUyHfdyaWXwOB3gI0zD53Hh1kyCuuJw9UHAqF6a9L86t9SosmfBqIpo0Fcltj+NFjlCQW6bT27MdSV7+HkJlYeHlK3QGOADekZTg67SwieDsusd+z7R01qqfdPCfqicqCaG2kRPV2OeLYMtH4ygLnO1GhUOupKT0FVcoCsCWNLVt0hzWBvrOScL3kocY6nHGZ3c6gIzYlykeyR4RPgGsE9WFPUD7VA1EUncwpFrJXCuWO6w1JlvBCwfAfIl2KzRQ85Y6t+sLoKOj7c211BUliIAQ07A8QudQ6L9wOGM38w=
+    - secure: 0RxL5VAU2M8b5OuGWILrvN1EMs5XIYgZzlJ6vOX1lTtLcwYwhFTIkf/wAqmTWN6jroOagCnc4YSF4TUX7BTJVvVjF/ABdqyKYzPjt9e9UmlhNFWkvyy9NvIQlflHWqlRYHi8ZBoBrunZnYN9sg/37osU4wSX0B65FgOG6HJ8VU+wiV7vMqooSA3+mnTvKQGFQO/vDxMEW860o8WhoZy9Ao0ZCORjieSECxetsX8//83Vqnv1RmljCz9tYdcMd//RMwW0ThmbK06ZkVI+W4oWmHYIhucvpeBlhK8b5oW2JzCsa6sg8fsTEfQvWLTNyl2dO0xb7zsj9pJbSh/7FKVc4rkHs6FPEIw5nw17A75HP+PigXBQRc24Rhj07udFsUkmD5qhlC/MG9XZGQU3g+n9LKTK0eXID/wFg3a6a90g620DtuIEYp7pQIMuNM735jlNg6jBVvp8ot+I5nyR3QMe6eWwUwk6oYMBaIAU/MNkKwHwgX8wRpqHFObBFJn71n5d8Dj6pJrXSC+/BXfGhX+2NJFqc1E+FHW4CVNFOU7RdW+/Djurihy5URRP8rvXqjW42e9nhIKyfpxT8hmMTqAZX1uRjw4TGA0lHTPbjLWiojx7dluK3cDd81Z69uA+6JGzN2tHUA7kDz3ocq/0aMFJM+jXIQMkybvC3KAdiDASmbk=
+    - secure: CG7OpPZFRei1rAAQYCgiL6FP9+zIKK6epgEScWwzN1GZauQJSQodBRQO/5eeJEjHrNvNQ/F8w4XTZ6W9HRTumWVeR4+SR9Z7Xi4NaL0wz9/jRrG8cKXnpYsr6p3gpdOz6NVjk6NgczonPCHYKJXnX5GzncOJqIKDljXUNm4DaJvnyCgjWkrlCCtCqqz74EUFN+oDNVoI1xq6rDGYUt9Rjh8ajxa+gISXPZLWcLPBSSAsXATrxQ2tpJRgLH/aY+8FCo7uJ1UqYwpKFDGVW5w9o+WLVvLg9dnpiNnlUKz396BtpE1085W4WEpcZsb8kK0LYfioakwGB2hHiJ9HXzYWJbQJmqaq8qcwF9hAmCgbcgkg6zboJicIHatHfjd1p8Y5pZUyHfdyaWXwOB3gI0zD53Hh1kyCuuJw9UHAqF6a9L86t9SosmfBqIpo0Fcltj+NFjlCQW6bT27MdSV7+HkJlYeHlK3QGOADekZTg67SwieDsusd+z7R01qqfdPCfqicqCaG2kRPV2OeLYMtH4ygLnO1GhUOupKT0FVcoCsCWNLVt0hzWBvrOScL3kocY6nHGZ3c6gIzYlykeyR4RPgGsE9WFPUD7VA1EUncwpFrJXCuWO6w1JlvBCwfAfIl2KzRQ85Y6t+sLoKOj7c211BUliIAQ07A8QudQ6L9wOGM38w=
+
 branches:
   only:
-  - master
-  - dev
+    - master
+    - dev
+
 before_install:
-- sudo apt-get update -qq
-jobs:
-  include:
-  - name: Run test for ansible 2.9.5
-    script:
-    - ansible-playbook tests/integration/targets/source_control/git_acp.yaml -vvv
-    env:
-    - ANSIBLE_VERSION=2.9.5
-    install:
-    - pip3 install ansible==$ANSIBLE_VERSION
-  - name: Run test for latest ansible version
-    script:
-    - ansible-playbook tests/integration/targets/source_control/git_acp.yaml -vvv
-    env:
-    - ANSIBLE_VERSION=latest
-    install:
-    - pip3 install ansible==$ANSIBLE_VERSION
+  - sudo apt-get update -qq
+
+install:
+  - if [ "$ANSIBLE_VERSION" = "latest" ]; then pip install ansible; else pip install ansible==$ANSIBLE_VERSION; fi
+
+script:
+  - ansible-playbook tests/integration/targets/source_control/git_acp.yaml -vvv
