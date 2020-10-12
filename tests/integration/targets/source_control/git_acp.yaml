@@ -198,13 +198,13 @@
       - assert: { that: "result.changed == true" }
   
       - name: 10092 - SETUP | debug new user.name.
-        shell: git config --local user.name
+        shell: git -C {{ working_dir }} config --local user.name
         register: user
       - debug: var=user
       - assert: { that: "'test_user' in user.stdout" }
   
       - name: 10093 - SETUP | debug new user.email.
-        shell: git config --local user.email
+        shell: git -C {{ working_dir }} config --local user.email
         register: email
       - debug: var=email
       - assert: { that: "'test_user@git.com' in email.stdout" }
@@ -256,7 +256,7 @@
           comment: Add file1.
           add: [ "{{ file1 }}" ]
           mode: local
-          url: /Users/federicoolivieri/test_directory/repo.git
+          url: "{{ working_dir }}/test_directory/repo.git"
         ignore_errors: yes
       - debug: var=result
       - assert: { that: "result.changed == true" }
@@ -269,7 +269,7 @@
           comment: Add file1.
           add: [ "{{ file1 }}" ]
           mode: local
-          url: /Users/federicoolivieri/test_directory/repo.git
+          url: "{{ working_dir }}/test_directory/repo.git"
           push_option: ci.skip
         ignore_errors: yes
       - debug: var=result
