@@ -133,7 +133,18 @@ from ansible.module_utils.basic import AnsibleModule
 
 
 def user_conifg(module):
+    """
+    Config git local user.name and user.email.
 
+    args:
+        * module:
+            type: dict()
+            descrition: Ansible basic module utilities and module arguments.
+    return:
+        * result:
+            type: dict()
+            desription: update change status.
+    """
     result = dict()
     user_name = module.params.get('user_name')
     user_email = module.params.get('user_email')
@@ -419,7 +430,15 @@ def git_push(module):
 
 
 def main():
+    """
+    Code entrypoint.
 
+    args: none
+    return:
+        * result:
+            type: dict()
+            desription: returned output from git commands and updated changed status.
+    """
     argument_spec = dict(
         path=dict(required=True, type="path"),
         comment=dict(required=True),
@@ -468,7 +487,9 @@ def main():
 
     if mode == 'ssh':
         if not url.startswith(('git@', 'ssh://git@')):
-            module.fail_json(msg='SSH mode selected but url (' + url + ') not starting with git@ or ssh://git@')
+            module.fail_json(
+                msg='SSH mode selected but url (' + url + ') not starting with git@ or ssh://git@'
+                )
 
         if url.startswith('ssh://git@github.com'):
             module.fail_json(msg='GitHub does not support "ssh://" URL. Please remove it from url')
