@@ -1,17 +1,28 @@
 dist: xenial
 language: python
 python: '3.7'
+
 env:
+  global:
+    - COLLECTION_NAMESPACE: lvrfrc87
+    - COLLECTION_NAME: git_acp
   matrix:
   - ANSIBLE_VERSION=2.9.5
+  - ANSIBLE_VERSION=latets
+
 branches:
   only:
   - master
   - dev
-before_install:
-- sudo apt-get update -qq
+
 install:
-- if [ "$ANSIBLE_VERSION" = "latest" ]; then pip install ansible; else pip install
-  ansible==$ANSIBLE_VERSION; fi
+  - if [ "$ANSIBLE_VERSION" = "latest" ]; then pip install ansible; else pip install ansible==$ANSIBLE_VERSION; fi
+
+before_install:
+  - mkdir -p ansible_collections/$COLLECTION_NAMESPACE
+  - mv ansible-collection-$COLLECTION_NAME ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
+  - cd ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
+
 script:
-- ansible-playbook tests/integration/targets/source_control/git_acp.yaml -vvv
+  - ansible-test sanity -v --color --test pep8
+  - ansible-playbook tests/integration/targets/source_control/git_acp.yaml -vvv
