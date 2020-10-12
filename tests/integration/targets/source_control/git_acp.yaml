@@ -113,7 +113,7 @@
   
       - command: "{{ item }}"
         loop: 
-          - "ls -la {{ playbook_dir }"
+          - "ls -la {{ playbook_dir }}"
           - "$PWD"
           - "find / -name {{ file1 }}"
         register: result
