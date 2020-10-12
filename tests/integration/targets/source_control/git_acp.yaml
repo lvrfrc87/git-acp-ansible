@@ -90,15 +90,6 @@
         loop:
           - "{{ file1 }}"
 
-      # - command: "{{ item }}"
-      #   loop: 
-      #     - "ls -la {{ playbook_dir }}"
-      #     - "echo $PWD"
-      #     # - "find / -name {{ file1 }}"
-      #   register: result
-
-      # - debug: var=result
-
       - name: 10035 - HTTPS | add "{{ file1 }}" .
         register: result
         git_acp:
@@ -107,7 +98,8 @@
           path: "{{ playbook_dir }}"
           branch: master
           comment: Add file1.
-          add: [ "." ]
+          add: 
+            - "{{ file1 }}"
           mode: https
           url: "https://gitlab.com/networkAutomation/git_test_module.git"
       - debug: var=result
