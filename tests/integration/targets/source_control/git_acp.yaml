@@ -273,8 +273,8 @@
       - name: 10105 - SETUP | create local bare repo
         shell: "{{ item }}"
         loop:
-          - "git -C "$HOME/test_directory init --bare repo.git"
-          - "git -C "$HOME/test_directory clone repo.git -l "
+          - "git -C $HOME/test_directory init --bare repo.git"
+          - "git -C $HOME/test_directory clone repo.git -l"
       
       - name: 10110 - SETUP | touch file1.
         file:
