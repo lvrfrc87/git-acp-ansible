@@ -6,18 +6,20 @@
     vars:
       user: "Federico87"
       token: "ryHGYzQsWLidc_Ws7m_y"
+      working_dir: "$HOME/git_acp_test/"
+
     tasks:
       - name: 10000 - SETUP | clone repo.
         git:
           repo: "https://{{ user }}:{{ token }}@gitlab.com/networkAutomation/git_test_module.git"
-          dest: "$HOME"
+          dest: "{{ working_dir }}"
 
       - name: 10020 - COMMIT | nothing to commit.
         register: result
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
-          path: "$HOME"
+          path: "{{ working_dir }}"
           branch: master
           add: [ "." ]
           comment: Nothing to commit
@@ -31,7 +33,7 @@
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: Add not existing file
           add: [ i_do_not_exsisit.txt ]
@@ -47,7 +49,7 @@
       
       - name: 10033 - SETUP | touch file1.
         file:
-          path: "{{ playbook_dir }}/{{ item }}"
+          path: "{{ working_dir }}/{{ item }}"
           state: touch
         loop:
           - "{{ file1 }}"
@@ -57,7 +59,7 @@
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: Add file1.
           add: [ "." ]
@@ -68,7 +70,7 @@
   
       - name: 10040 - SETUP | rm file1.
         file:
-          path: "{{ playbook_dir }}/{{ item }}"
+          path: "{{ working_dir }}/{{ item }}"
           state: absent
         loop:
           - "{{ file1 }}"
@@ -76,7 +78,7 @@
       - name: 10045 - SSH | add "{{ file1 }}".
         register: result
         git_acp:
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: Add file1.
           add: [ "{{ file1 }}" ]
@@ -88,7 +90,7 @@
   
       - name: 10050 - SETUP | touch file1.
         file:
-          path: "{{ playbook_dir }}/{{ item }}"
+          path: "{{ working_dir }}/{{ item }}"
           state: touch
         loop:
           - "{{ file1 }}"
@@ -98,7 +100,7 @@
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: Add file1.
           remote: test_origin
@@ -117,7 +119,7 @@
   
       - name: 10065 - SETUP | rm file1.
         file:
-          path: "{{ playbook_dir }}/{{ item }}"
+          path: "{{ working_dir }}/{{ item }}"
           state: absent
         loop:
           - "{{ file1 }}"
@@ -125,7 +127,7 @@
       - name: 10070 - SSH | remove "{{ file1 }}" to default origin.
         register: result
         git_acp:
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: Add file1.
           add: [ "{{ file1 }}" ]
@@ -145,7 +147,7 @@
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: fail because ssh URL
           add: [ "." ]
@@ -158,7 +160,7 @@
       - name: 10085 - SSH | fail because https URL.
         register: result
         git_acp:
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: fail because https URL
           add: [ "." ]
@@ -171,7 +173,7 @@
       - name: 10090 - SSH | fail because ssh:// in GitHub.
         register: result
         git_acp:
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: fail because ssh in GitHub
           add: [ "." ]
@@ -184,7 +186,7 @@
       - name: 10091 - SSH | set user.name and user.email
         register: result
         git_acp:
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: add user and email only
           add: [ "." ]
@@ -212,7 +214,7 @@
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           comment: fail because user_name only
           add: [ "." ]
@@ -225,23 +227,23 @@
   
       - name: 10095 - SETUP | remove test directory.
         file: 
-          path: "$HOME/test_directory" 
+          path: "{{ working_dir }}/test_directory" 
           state: absent
     
       - name: 10100 - SETUP | create test directory.
         file: 
-          path: "$HOME/test_directory" 
+          path: "{{ working_dir }}/test_directory" 
           state: directory
   
       - name: 10105 - SETUP | create local bare repo
         shell: "{{ item }}"
         loop:
-          - "git -C $HOME/test_directory init --bare repo.git"
-          - "git -C $HOME/test_directory clone repo.git -l"
+          - "git -C {{ working_dir }}/test_directory init --bare repo.git"
+          - "git -C {{ working_dir }}/test_directory clone repo.git -l"
       
       - name: 10110 - SETUP | touch file1.
         file:
-          path: "$HOME/test_directory/repo/{{ item }}"
+          path: "{{ working_dir }}/test_directory/repo/{{ item }}"
           state: touch
         loop:
           - "{{ file1 }}"
@@ -249,7 +251,7 @@
       - name: 10110 - LOCAL | push on local repo.
         register: result
         git_acp:
-          path: "$HOME/test_directory/repo"
+          path: "{{ working_dir }}/test_directory/repo"
           branch: master
           comment: Add file1.
           add: [ "{{ file1 }}" ]
@@ -262,7 +264,7 @@
       - name: 10115 - LOCAL | fail beacuse push_option
         register: result
         git_acp:
-          path: "$HOME/test_directory/repo"
+          path: "{{ working_dir }}/test_directory/repo"
           branch: master
           comment: Add file1.
           add: [ "{{ file1 }}" ]
@@ -275,7 +277,7 @@
 
       - name: 10120 - SETUP | delete test file.
         file:
-          path: "{{ playbook_dir }}/{{ item }}"
+          path: "{{ working_dir }}/{{ item }}"
           state: absent
         ignore_errors: yes
         loop:
