@@ -15,7 +15,7 @@
           dest: "{{ working_dir }}"
 
       - name: 10003 - SETUP | sync repo pull.
-        shell: git -C {{ playbook_dir }} pull
+        shell: git -C "{{ working_dir }}" pull
         ignore_errors: yes
 
       - name: 10005 - SETUP | https loca repo ahead.
@@ -23,7 +23,7 @@
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           add: ["."]
           comment: Local repo ahead
@@ -35,7 +35,7 @@
       - name: 10010 - SETUP | ssh local repo ahead.
         register: result
         git_acp:
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           add: ["."]
           comment: Local repo ahead
@@ -49,7 +49,7 @@
         git_acp:
           user: "{{ user }}"
           token: "{{ token }}"
-          path: "{{ playbook_dir }}"
+          path: "{{ working_dir }}"
           branch: master
           add: ["."]
           comment: Synch repos
