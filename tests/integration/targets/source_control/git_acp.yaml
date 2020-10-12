@@ -90,14 +90,14 @@
         loop:
           - "{{ file1 }}"
 
-      - command: "{{ item }}"
-        loop: 
-          - "ls -la {{ playbook_dir }}"
-          - "echo $PWD"
-          # - "find / -name {{ file1 }}"
-        register: result
+      # - command: "{{ item }}"
+      #   loop: 
+      #     - "ls -la {{ playbook_dir }}"
+      #     - "echo $PWD"
+      #     # - "find / -name {{ file1 }}"
+      #   register: result
 
-      - debug: var=result
+      # - debug: var=result
 
       - name: 10035 - HTTPS | add "{{ file1 }}" .
         register: result
