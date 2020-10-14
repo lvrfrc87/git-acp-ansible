@@ -95,7 +95,6 @@
       file:
         path: "{{ working_dir }}/{{ item }}"
         state: touch
-        mode: 0644
       loop:
         - "{{ file1 }}"
 
@@ -137,7 +136,6 @@
       file:
         path: "{{ working_dir }}/{{ item }}"
         state: touch
-        mode: 0644
       loop:
         - "{{ file1 }}"
 
@@ -275,13 +273,11 @@
       file:
         path: "{{ working_dir }}/test_directory"
         state: absent
-        mode: 0666
 
     - name: 10100 - SETUP | create test directory.
       file:
         path: "{{ working_dir }}/test_directory"
         state: directory
-        mode: 0666
 
     - name: 10105 - SETUP | create local bare repo
       shell: "{{ item }}"
@@ -293,7 +289,6 @@
       file:
         path: "{{ working_dir }}/test_directory/repo/{{ item }}"
         state: touch
-        mode: 0644
       loop:
         - "{{ file1 }}"
 
