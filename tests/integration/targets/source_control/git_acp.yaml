@@ -275,13 +275,13 @@
       file:
         path: "{{ working_dir }}/test_directory"
         state: absent
-        mode: 0644
+        mode: 0666
 
     - name: 10100 - SETUP | create test directory.
       file:
         path: "{{ working_dir }}/test_directory"
         state: directory
-        mode: 0644
+        mode: 0666
 
     - name: 10105 - SETUP | create local bare repo
       shell: "{{ item }}"
