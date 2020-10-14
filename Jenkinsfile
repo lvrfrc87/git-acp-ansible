@@ -14,7 +14,8 @@ pipeline {
         }
         stage('integration') {
             steps {
-                sh ' ansible-playbook tests/integration/targets/source_control/git_acp.yaml -vvv'
+                sh 'pwd'
+                sh 'ansible-playbook tests/integration/targets/source_control/git_acp.yaml -vvv'
             }
         }
     }
