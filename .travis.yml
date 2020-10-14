@@ -13,6 +13,7 @@ before_install:
 install:
 - if [ "$ANSIBLE_VERSION" = "latest" ]; then pip install ansible; else pip install
   ansible==$ANSIBLE_VERSION; fi
+- pip install ansible-lint
 script:
 - ansible-lint -x 502,305,301,303,401 tests/integration/targets/source_control/git_acp.yaml
 - ansible-playbook tests/integration/targets/source_control/git_acp.yaml -vvv
