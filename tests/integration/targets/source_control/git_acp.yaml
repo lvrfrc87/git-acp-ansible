@@ -6,7 +6,7 @@
   vars:
     user: "{{ lookup('env', 'GIT_USER') }}"
     token: "{{ lookup('env', 'GIT_TOKEN') }}"
-    working_dir: "$HOME/git_acp_test/"
+    working_dir: "$HOME/git_acp_test"
 
   tasks:
     - name: 10000 - SETUP | clone repo.
