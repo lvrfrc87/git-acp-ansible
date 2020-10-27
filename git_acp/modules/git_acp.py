@@ -14,10 +14,10 @@ DOCUMENTATION = '''
 module: git_acp
 author:
     - "Federico Olivieri (@Federico87)"
-short_description: Perform git add, commit and push operations.
+short_description: Perform git add, commit and push operations. Set git config user name and email.
 description:
-    - Manage C(git add), C(git commit) and C(git push) on a local
-      or remote git repositroy.
+    - Manage C(git add), C(git commit) C(git push), C(git config) user name and email on a local
+      or remote git repository.
 options:
     path:
         description:
