@@ -1,4 +1,4 @@
-Module documentation can be found [here](https://github.com/lvrfrc87/git-acp-ansible/blob/master/README.md)
+Module documentation can be found [here](../../../README.md)
 
 ### HOW INSTALL COLLECTION
 
