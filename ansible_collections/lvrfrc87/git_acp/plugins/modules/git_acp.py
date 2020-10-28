@@ -35,7 +35,6 @@ options:
               File globs not accepted, such as C(./*) or C(*).
         type: list
         elements: str
-        required: true
         default: ["."]
     user:
         description:
@@ -72,11 +71,11 @@ options:
         type: str
         default: origin
     user_name:
-        decription:
+        description:
             - Explicit git local user name. Nice to have for remote operations.
         type: str
     user_email:
-        decription:
+        description:
             - Explicit git local email address. Nice to have for remote operations.
         type: str
 
@@ -489,7 +488,7 @@ def main():
         if not url.startswith(('git@', 'ssh://git@')):
             module.fail_json(
                 msg='SSH mode selected but url (' + url + ') not starting with git@ or ssh://git@'
-                )
+            )
 
         if url.startswith('ssh://git@github.com'):
             module.fail_json(msg='GitHub does not support "ssh://" URL. Please remove it from url')

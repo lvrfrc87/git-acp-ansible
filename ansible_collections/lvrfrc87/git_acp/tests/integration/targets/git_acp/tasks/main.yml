@@ -19,7 +19,7 @@
     comment: Local repo ahead
     mode: https
     url: "https://gitlab.com/networkAutomation/git_test_module.git"
-  ignore_errors: yes   
+  ignore_errors: yes
 - debug: var=result
 
 - name: 10010 - SETUP | ssh local repo ahead.
@@ -31,9 +31,9 @@
     comment: Local repo ahead
     mode: ssh
     url: "git@gitlab.com:networkAutomation/git_test_module.git"
-  ignore_errors: yes   
+  ignore_errors: yes
 - debug: var=result
-- assert: { that: "result.changed == false" }
+- assert: { that: not result.changed }
 
 - name: 10015 - SETUP | sync repo push.
   git_acp:
@@ -45,7 +45,7 @@
     comment: Synch repos
     mode: https
     url: "https://gitlab.com/networkAutomation/git_test_module.git"
-  ignore_errors: yes   
+  ignore_errors: yes
 
 - name: 10020 - COMMIT | nothing to commit.
   register: result
@@ -59,7 +59,7 @@
     mode: https
     url: "https://gitlab.com/networkAutomation/git_test_module.git"
 - debug: var=result
-- assert: { that: "result.changed == false" }
+- assert: { that: not result.changed }
 
 - name: 10025 - ADD FAIL | add not exsisting file.
   register: result
@@ -74,7 +74,7 @@
     url: "https://gitlab.com/networkAutomation/git_test_module.git"
   ignore_errors: yes
 - debug: var=result
-- assert: { that: "result.changed == false" }
+- assert: { that: not result.changed }
 
 - name: 10030 - SETUP | set first random file name.
   set_fact:
@@ -98,8 +98,10 @@
     add: [ "." ]
     mode: https
     url: "https://gitlab.com/networkAutomation/git_test_module.git"
+    user_name: "lvrfrc87"
+    user_email: "lvrfrc87@gmail.com"
 - debug: var=result
-- assert: { that: "result.changed == true" }
+- assert: { that: result.changed }
 
 - name: 10040 - SETUP | rm file1.
   file:
@@ -119,7 +121,7 @@
     mode: ssh
     url: "git@gitlab.com:networkAutomation/git_test_module.git"
 - debug: var=result
-- assert: { that: "result.changed == true" }
+- assert: { that: result.changed }
 
 - name: 10050 - SETUP | touch file1.
   file:
@@ -137,12 +139,12 @@
     branch: master
     comment: Add file1.
     remote: test_origin
-    add: 
+    add:
       - "."
     mode: https
     url: "https://gitlab.com/networkAutomation/git_test_module.git"
 - debug: var=result
-- assert: { that: "result.changed == true" }
+- assert: { that: result.changed }
 
 - name: 10060 - SETUP | debug new remote set.
   shell: git -C "{{ working_dir }}" remote -v
@@ -168,10 +170,10 @@
     mode: ssh
     url: "git@gitlab.com:networkAutomation/git_test_module.git"
 - debug: var=result
-- assert: { that: "result.changed == true" }
+- assert: { that: result.changed }
 
 - name: 10075 - SETUP | debug default remote set.
-  shell: git remote get-url --all origin
+  shell: git -C "{{ working_dir }}" remote get-url --all origin
   register: remote
 - debug: var=origin
 
@@ -188,7 +190,7 @@
     url: "git@gitlab.com:networkAutomation/git_test_module.git"
   ignore_errors: yes
 - debug: var=result
-- assert: { that: "result.changed == false" }
+- assert: { that: not result.changed }
 
 - name: 10085 - SSH | fail because https URL.
   register: result
@@ -201,7 +203,7 @@
     url: "https://gitlab.com/networkAutomation/git_test_module.git"
   ignore_errors: yes
 - debug: var=result
-- assert: { that: "result.changed == false" }
+- assert: { that: not result.changed }
 
 - name: 10090 - SSH | fail because ssh:// in GitHub.
   register: result
@@ -214,7 +216,7 @@
     url: "ssh://git@github.com:lvrfrc87/git-acp-test.git"
   ignore_errors: yes
 - debug: var=result
-- assert: { that: "result.changed == false" }
+- assert: { that: not result.changed }
 
 - name: 10091 - SSH | set user.name and user.email
   register: result
@@ -228,7 +230,7 @@
     user_name: test_user
     user_email: test_user@git.com
 - debug: var=result
-- assert: { that: "result.changed == true" }
+- assert: { that: result.changed }
 
 - name: 10092 - SETUP | debug new user.name.
   shell: git -C {{ working_dir }} config --local user.name
@@ -256,16 +258,16 @@
     url: "git@gitlab.com:networkAutomation/git_test_module.git"
   ignore_errors: yes
 - debug: var=result
-- assert: { that: "result.changed == false" }      
+- assert: { that: not result.changed }
 
 - name: 10095 - SETUP | remove test directory.
-  file: 
-    path: "{{ working_dir }}/test_directory" 
+  file:
+    path: "{{ working_dir }}/test_directory"
     state: absent
 
 - name: 10100 - SETUP | create test directory.
-  file: 
-    path: "{{ working_dir }}/test_directory" 
+  file:
+    path: "{{ working_dir }}/test_directory"
     state: directory
 
 - name: 10105 - SETUP | create local bare repo
@@ -290,9 +292,11 @@
     add: [ "{{ file1 }}" ]
     mode: local
     url: "{{ working_dir }}/test_directory/repo.git"
+    user_name: "lvrfrc87"
+    user_email: "lvrfrc87@gmail.com"
   ignore_errors: yes
 - debug: var=result
-- assert: { that: "result.changed == true" }
+- assert: { that: result.changed }
 
 - name: 10115 - LOCAL | fail beacuse push_option
   register: result
@@ -306,7 +310,7 @@
     push_option: ci.skip
   ignore_errors: yes
 - debug: var=result
-- assert: { that: "result.changed == false" }
+- assert: { that: not result.changed }
 
 - name: 10120 - SETUP | delete test file.
   file:
