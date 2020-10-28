@@ -1,8 +1,8 @@
-Module documentation can be found [here](https://github.com/lvrfrc87/git-acp-ansible/blob/master/README.md)
+Module documentation can be found [here](../../../README.md)
 
 ### HOW INSTALL COLLECTION
 
-- Locally using `tar` file: `ansible-galaxy collection install lvrfrc87-git_acp-1.1.tar.gz -p ./collections`
+- Locally using `tar` file: `ansible-galaxy collection install lvrfrc87-git_acp-1.1.tar.gz`
 
 - From GitHub: `ansible-galaxy collection install git+https://github.com/lvrfrc87/git-acp-ansible.git,master`
 
@@ -20,7 +20,6 @@ Module documentation can be found [here](https://github.com/lvrfrc87/git-acp-ans
     - lvrfrc87.git_acp
 
   tasks:
-
     - name: 10005 - SETUP | https loca repo ahead.
       register: result
       git_acp:
