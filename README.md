@@ -76,33 +76,49 @@ options:
             - Git repo URL.
         required: True
         type: str
+    remote:
+        description:
+            - Local system alias for git remote PUSH and PULL repository operations.
+        type: str
+        default: origin
+    user_name:
+        decription:
+            - Explicit git local user name. Nice to have for remote operations.
+        type: str
+    user_email:
+        decription:
+            - Explicit git local email address. Nice to have for remote operations.
+        type: str
 ```
 
 ### Examples:
 
 ```
-- name: HTTPS | push all changes.
+- name: HTTPS | add file1.
   git_acp:
     user: Federico87
     token: mytoken
     path: /Users/git/git_acp
     branch: master
-    comment: Add all the thinghs.
+    comment: Add file1.
+    remote: origin
     add: [ "." ]
     mode: https
     url: "https://gitlab.com/networkAutomation/git_test_module.git"
 
-- name: SSH | push file1 and file2.
+- name: SSH | add file1.
   git_acp:
     path: /Users/git/git_acp
     branch: master
-    comment: Add file1 and file2.
-    add: [ file1, file2 ]
+    comment: Add file1.
+    add: [ file1  ]
+    remote: dev_test
     mode: ssh
-    push_option: ci.skip
     url: "git@gitlab.com:networkAutomation/git_test_module.git"
+    user_name: lvrfrc87
+    user_email: lvrfrc87@gmail.com
 
-- name: LOCAL | push file1 on local repo.
+- name: LOCAL | push on local repo.
   git_acp:
     path: "~/test_directory/repo"
     branch: master
@@ -111,4 +127,3 @@ options:
     mode: local
     url: /Users/federicoolivieri/test_directory/repo.git
 ```
-

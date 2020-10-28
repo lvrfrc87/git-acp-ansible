@@ -489,7 +489,7 @@ def main():
         if not url.startswith(('git@', 'ssh://git@')):
             module.fail_json(
                 msg='SSH mode selected but url (' + url + ') not starting with git@ or ssh://git@'
-            )
+                )
 
         if url.startswith('ssh://git@github.com'):
             module.fail_json(msg='GitHub does not support "ssh://" URL. Please remove it from url')
