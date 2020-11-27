@@ -2,14 +2,14 @@
 - name: 10000 - SETUP | clone repo.
   git:
     repo: "https://{{ user }}:{{ token }}@gitlab.com/networkAutomation/git_test_module.git"
-    dest: "{{ playbook_dir }}"
+    dest: "{{ working_dir }}"
 
 - name: 10005 - SETUP | https loca repo ahead.
   register: result
   git_acp:
     user: "{{ user }}"
     token: "{{ token }}"
-    path: "{{ playbook_dir }}"
+    path: "{{ working_dir }}"
     branch: master
     add: ["."]
     comment: Local repo ahead
@@ -21,7 +21,7 @@
 - name: 10010 - SETUP | ssh local repo ahead.
   register: result
   git_acp:
-    path: "{{ playbook_dir }}"
+    path: "{{ working_dir }}"
     branch: master
     add: ["."]
     comment: Local repo ahead
@@ -35,7 +35,7 @@
   git_acp:
     user: "{{ user }}"
     token: "{{ token }}"
-    path: "{{ playbook_dir }}"
+    path: "{{ working_dir }}"
     branch: master
     add: ["."]
     comment: Synch repos
