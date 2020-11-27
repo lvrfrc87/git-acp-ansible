@@ -1,7 +1,11 @@
 dist: xenial
 language: python
 python: '3.7'
+
 env:
+  global:
+    - COLLECTION_NAMESPACE: lvrfrc87
+    - COLLECTION_NAME: git_acp
   matrix:
   - ANSIBLE_VERSION=2.9.5
   global:
@@ -11,8 +15,7 @@ branches:
   only:
   - master
   - dev
-before_install:
-- sudo apt-get update -qq
+
 install:
 - if [ "$ANSIBLE_VERSION" = "latest" ]; then pip install ansible; else pip install
   ansible==$ANSIBLE_VERSION; fi

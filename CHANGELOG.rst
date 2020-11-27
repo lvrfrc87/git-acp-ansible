@@ -1,3 +1,7 @@
+# Ver. 1.1.1
+
+- Add support for Gitolite ssh URL
+
 # Ver. 1.1.0
 
 - Add idempotency for `git remote add`  command
