@@ -474,20 +474,20 @@ def main():
     user_email = module.params.get('user_email')
 
     if mode == 'local':
-        if url.startswith(('https://', 'git@', 'ssh://git@')):
-            module.fail_json(msg='SSH or HTTPS mode selected but repo is LOCAL')
+        if url.startswith(('https://', 'git', 'ssh://git')):
+            module.fail_json(msg='SSH or HTTPS mode selected but repo is "local')
 
         if push_option:
             module.fail_json(msg='"--push-option" not supported with mode "local"')
 
     if mode == 'https':
         if not url.startswith('https://'):
-            module.fail_json(msg='HTTPS mode selected but url (' + url + ') is not HTTPS')
+            module.fail_json(msg='HTTPS mode selected but url (' + url + ') not starting with "https"')
 
     if mode == 'ssh':
-        if not url.startswith(('git@', 'ssh://git@')):
+        if not url.startswith(('git', 'ssh://git')):
             module.fail_json(
-                msg='SSH mode selected but url (' + url + ') not starting with git@ or ssh://git@'
+                msg='SSH mode selected but url (' + url + ') not starting with "git" or "ssh://git"'
             )
 
         if url.startswith('ssh://git@github.com'):
