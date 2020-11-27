@@ -8,20 +8,22 @@ env:
     - COLLECTION_NAME: git_acp
   matrix:
   - ANSIBLE_VERSION=2.9.5
-  - ANSIBLE_VERSION=latets
-
+  global:
+  - COLLECTION_NAMESPACE: lvrfrc87
+  - COLLECTION_NAME: git_acp
 branches:
   only:
   - master
   - dev
 
 install:
-  - if [ "$ANSIBLE_VERSION" = "latest" ]; then pip install ansible; else pip install ansible==$ANSIBLE_VERSION; fi
-
-before_install:
-  - mkdir -p ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
+- if [ "$ANSIBLE_VERSION" = "latest" ]; then pip install ansible; else pip install
+  ansible==$ANSIBLE_VERSION; fi
+- pip install ansible-lint
+before_script:
+  # - cd ../
   - cd ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
-
 script:
-  - ansible-test sanity -v --color --test pep8
-  - ansible-playbook tests/integration/targets/source_control/git_acp.yaml -vvv
+- ansible-test sanity --docker -v plugins/modules/
+- ansible-lint tests/integration/targets/git_acp/tasks/main.yml
+- ansible-test integration -v --docker
