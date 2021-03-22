@@ -20,8 +20,8 @@ jobs:
   include:
   - stage: dev
     if: branch = dev
-    script: ./deployment/dev.sh;
+    script: ./deployment/dev.sh
   - stage: master
     if: branch = master
-    script: ./deployment/master.sh;
+    script: ./deployment/master.sh
 
