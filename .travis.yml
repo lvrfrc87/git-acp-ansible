@@ -16,6 +16,12 @@ before_script:
   # - cd ../
   - cd ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
 
-script:
-- if [ "$TRAVIS_BRANCH" = "dev" ]; then ./deployment/dev.sh; fi
-- if [ "$TRAVIS_BRANCH" = "master" ]; then ./deployment/master.sh; fi
+jobs:
+  include:
+  - stage: dev
+    if: branch = dev
+    script: ./deployment/dev.sh;
+  - stage: master
+    if: branch = master
+    script: ./deployment/master.sh;
+
