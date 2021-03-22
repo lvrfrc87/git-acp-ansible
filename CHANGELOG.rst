@@ -1,3 +1,7 @@
+# Ver. 1.1.2
+
+- New release for PyPi package fix only
+
 # Ver. 1.1.1
 
 - Add support for Gitolite ssh URL

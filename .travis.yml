@@ -8,9 +8,6 @@ env:
     - COLLECTION_NAME: git_acp
   matrix:
   - ANSIBLE_VERSION=2.9.5
-  global:
-  - COLLECTION_NAMESPACE: lvrfrc87
-  - COLLECTION_NAME: git_acp
 branches:
   only:
   - master

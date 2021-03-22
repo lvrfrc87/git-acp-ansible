@@ -1,0 +1,1 @@
+Folder for backward compatibility with PyPi package and Ansible <8 2.9  
