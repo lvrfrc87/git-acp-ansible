@@ -7,22 +7,15 @@ env:
     - COLLECTION_NAMESPACE: lvrfrc87
     - COLLECTION_NAME: git_acp
   matrix:
-  - ANSIBLE_VERSION=latest
-
+    - ANSIBLE_VERSION=latest
 install:
-- if [ "$ANSIBLE_VERSION" = "latest" ]; then pip install ansible; else pip install
-  ansible==$ANSIBLE_VERSION; fi
-- pip install ansible-lint
+  - if [ "$ANSIBLE_VERSION" = "latest" ]; then pip install ansible; else pip install
+    ansible==$ANSIBLE_VERSION; fi
+  - pip install ansible-lint
 before_script:
   # - cd ../
   - cd ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
 
-deploy:
-  - povider: script
-    script: deployment/dev.sh
-    on:
-      branch: dev
-  - povider: script
-    script: deployment/master.sh
-    on:
-      branch: master
+script:
+- if [ "$TRAVIS_BRANCH" = "dev" ]; then ./deployment/dev.sh; fi
+- if [ "$TRAVIS_BRANCH" = "master" ]; then ./deployment/master.sh; fi
