@@ -47,8 +47,8 @@ options:
     branch:
         description:
             - Git branch where perform git push.
-        required: True
         type: str
+        default: master
     push_option:
         description:
             - Git push options. Same as C(git --push-option=option).
@@ -314,7 +314,24 @@ def git_push(module):
             type: dict()
             desription: returned output from git push command and updated changed status.
     """
-    def git_set_url(module):
+    url = module.params.get('url')
+    mode = module.params.get('mode')
+    user = module.params.get('user')
+    token = module.params.get('token')
+    origin = module.params.get('remote')
+    branch = module.params.get('branch')
+    push_option = module.params.get('push_option')
+    path = module.params.get('path')
+    origin = module.params.get('remote')
+
+    push_cmd = [
+        'git',
+        'push',
+        origin,
+        branch,
+    ]
+
+    def git_set_url():
         """
         Set URL and remote if required.
 
@@ -324,12 +341,6 @@ def git_push(module):
                 descrition: Ansible basic module utilities and module arguments.
         return: null
         """
-        url = module.params.get('url')
-        mode = module.params.get('mode')
-        user = module.params.get('user')
-        token = module.params.get('token')
-        origin = module.params.get('remote')
-
         get_url_cmd = [
             'git',
             'remote',
@@ -377,7 +388,7 @@ def git_push(module):
             if rc == 0:
                 return
 
-    def git_push_cmd(path, cmd_push):
+    def git_push_cmd():
         """
         Set URL and remote if required. Push changes to remote repo.
 
@@ -395,7 +406,7 @@ def git_push(module):
         """
         result = dict()
 
-        rc, output, error = module.run_command(cmd_push, cwd=path)
+        rc, output, error = module.run_command(push_cmd, cwd=path)
 
         if rc != 0:
             module.fail_json(msg=str(error) + str(output))
@@ -406,26 +417,14 @@ def git_push(module):
             )
             return result
 
-    branch = module.params.get('branch')
-    push_option = module.params.get('push_option')
-    path = module.params.get('path')
-    origin = module.params.get('remote')
-
-    push_cmd = [
-        'git',
-        'push',
-        origin,
-        branch,
-    ]
-
     if not push_option:
-        git_set_url(module)
-        return git_push_cmd(path, push_cmd)
+        git_set_url()
+        return git_push_cmd()
 
     if push_option:
         push_cmd.insert(3, '--push-option={0} '.format(push_option))
-        git_set_url(module)
-        return git_push_cmd(path, push_cmd)
+        git_set_url()
+        return git_push_cmd()
 
 
 def main():
@@ -439,26 +438,26 @@ def main():
             desription: returned output from git commands and updated changed status.
     """
     argument_spec = dict(
-        path=dict(required=True, type="path"),
+        path=dict(required=True, type='path'),
         comment=dict(required=True),
-        add=dict(type='list', elements='str', default=["."]),
+        add=dict(type='list', elements='str', default=['.']),
         user=dict(),
         token=dict(no_log=True),
-        branch=dict(required=True),
+        branch=dict(default='master'),
         push_option=dict(),
-        mode=dict(choices=["ssh", "https", "local"], default='ssh'),
+        mode=dict(choices=['ssh', 'https', 'local'], default='ssh'),
         url=dict(required=True),
-        remote=dict(default="origin"),
+        remote=dict(default='origin'),
         user_name=dict(),
         user_email=dict(),
     )
 
     required_if = [
-        ("mode", "https", ["user", "token"]),
+        ('mode', 'https', ['user', 'token']),
     ]
 
     required_together = [
-        ["user_name", "user_email"],
+        ['user_name', 'user_email'],
     ]
 
     module = AnsibleModule(

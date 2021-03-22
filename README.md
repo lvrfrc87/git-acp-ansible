@@ -4,23 +4,18 @@
 
 ### PyPi Install:
 
-To install the module just run the command:
-
-`pip install git-acp-ansible`
-
-Edit your `ansible.cfg` file and add the path where `git_acp` module is installed.
-
-i.e.
+PyPi package is not longer supported (last version available is `1.1.2`). Using collection is strongly advised.
+For older Ansible versions that do not support collection, you can copy `ansible_collections/lvrfrc87/git_acp/plugins/modules/git_acp.py` into `library` directory in the root of your Ansible project:
 
 ```
-[defaults]
-library = ./lib/python3.7/site-packages/git-acp-ansible/modules
+myproject/
+├── ansible.cfg
+├── inv/
+├── library/
+│   ├── git_acp.py
+├── playbooks/
+├── roles/
 ```
-
-If you run a `virtualenv` most probably the path would be something similar to the example above. 
-Otherwise you can use for example `mlocate` to find where the module is.
-
-For more info, have a look to [Ansible Docs](https://docs.ansible.com/ansible/latest/installation_guide/intro_configuration.html#library)
 
 
 ### Ansible Galaxy Install (for Ansible version > 2.9)
