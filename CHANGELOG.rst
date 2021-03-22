@@ -1,3 +1,9 @@
+# Ver. 1.1.3
+
+- Add default "origin" in remote
+- End of support for PyPi
+- Remove args from closure function
+
 # Ver. 1.1.2
 
 - New release for PyPi package fix only
