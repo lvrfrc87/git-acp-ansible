@@ -8,10 +8,6 @@ env:
     - COLLECTION_NAME: git_acp
   matrix:
   - ANSIBLE_VERSION=latest
-branches:
-  only:
-  - master
-  - dev
 
 install:
 - if [ "$ANSIBLE_VERSION" = "latest" ]; then pip install ansible; else pip install
@@ -20,7 +16,13 @@ install:
 before_script:
   # - cd ../
   - cd ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
-script:
-- ansible-test sanity --docker -v plugins/modules/
-# - ansible-lint tests/integration/targets/git_acp/tasks/main.yml
-- ansible-test integration -v --docker
+
+deploy:
+  - povider: script
+    script: deployment/dev.sh
+    on:
+      branch: dev
+  - povider: script
+    script: deployment/master.sh
+    on:
+      branch: master
