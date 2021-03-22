@@ -1,0 +1,321 @@
+---
+- name: 10000 - SETUP | clone repo.
+  git:
+    repo: "https://{{ user }}:{{ token }}@gitlab.com/networkAutomation/git_test_module.git"
+    dest: "{{ working_dir }}"
+
+- name: 10005 - SETUP | https loca repo ahead.
+  register: result
+  git_acp:
+    user: "{{ user }}"
+    token: "{{ token }}"
+    path: "{{ working_dir }}"
+    branch: master
+    add: ["."]
+    comment: Local repo ahead
+    mode: https
+    url: "https://gitlab.com/networkAutomation/git_test_module.git"
+  ignore_errors: yes
+- debug: var=result
+
+- name: 10010 - SETUP | ssh local repo ahead.
+  register: result
+  git_acp:
+    path: "{{ working_dir }}"
+    branch: master
+    add: ["."]
+    comment: Local repo ahead
+    mode: ssh
+    url: "git@gitlab.com:networkAutomation/git_test_module.git"
+  ignore_errors: yes
+- debug: var=result
+- assert: { that: not result.changed }
+
+- name: 10015 - SETUP | sync repo push.
+  git_acp:
+    user: "{{ user }}"
+    token: "{{ token }}"
+    path: "{{ working_dir }}"
+    branch: master
+    add: ["."]
+    comment: Synch repos
+    mode: https
+    url: "https://gitlab.com/networkAutomation/git_test_module.git"
+  ignore_errors: yes
+
+- name: 10020 - COMMIT | nothing to commit.
+  register: result
+  git_acp:
+    user: "{{ user }}"
+    token: "{{ token }}"
+    path: "{{ working_dir }}"
+    branch: master
+    add: [ "." ]
+    comment: Nothing to commit
+    mode: https
+    url: "https://gitlab.com/networkAutomation/git_test_module.git"
+- debug: var=result
+- assert: { that: not result.changed }
+
+- name: 10025 - ADD FAIL | add not exsisting file.
+  register: result
+  git_acp:
+    user: "{{ user }}"
+    token: "{{ token }}"
+    path: "{{ working_dir }}"
+    branch: master
+    comment: Add not existing file
+    add: [ i_do_not_exsisit.txt ]
+    mode: https
+    url: "https://gitlab.com/networkAutomation/git_test_module.git"
+  ignore_errors: yes
+- debug: var=result
+- assert: { that: not result.changed }
+
+- name: 10027 - SETUP | sync repo pull.
+  shell: git -C {{ working_dir }} pull
+  ignore_errors: yes
+
+- name: 10030 - SETUP | set first random file name.
+  set_fact:
+    file1: "{{ lookup('pipe','date +%s%N') }}.txt"
+
+- name: 10033 - SETUP | touch file1.
+  file:
+    path: "{{ working_dir }}/{{ item }}"
+    state: touch
+  loop:
+    - "{{ file1 }}"
+
+- name: 10035 - HTTPS | add "{{ file1 }}" .
+  register: result
+  git_acp:
+    user: "{{ user }}"
+    token: "{{ token }}"
+    path: "{{ working_dir }}"
+    branch: master
+    comment: Add file1.
+    add: [ "." ]
+    mode: https
+    url: "https://gitlab.com/networkAutomation/git_test_module.git"
+    user_name: "lvrfrc87"
+    user_email: "lvrfrc87@gmail.com"
+- debug: var=result
+- assert: { that: result.changed }
+
+- name: 10040 - SETUP | rm file1.
+  file:
+    path: "{{ working_dir }}/{{ item }}"
+    state: absent
+  loop:
+    - "{{ file1 }}"
+
+- name: 10045 - SSH | add "{{ file1 }}".
+  register: result
+  git_acp:
+    path: "{{ working_dir }}"
+    branch: master
+    comment: Add file1.
+    add: [ "{{ file1 }}" ]
+    push_option: ci.skip
+    mode: ssh
+    url: "git@gitlab.com:networkAutomation/git_test_module.git"
+- debug: var=result
+- assert: { that: result.changed }
+
+- name: 10050 - SETUP | touch file1.
+  file:
+    path: "{{ working_dir }}/{{ item }}"
+    state: touch
+  loop:
+    - "{{ file1 }}"
+
+- name: 10055 - HTTPS | add "{{ file1 }}" to remote test_origin.
+  register: result
+  git_acp:
+    user: "{{ user }}"
+    token: "{{ token }}"
+    path: "{{ working_dir }}"
+    branch: master
+    comment: Add file1.
+    remote: test_origin
+    add:
+      - "."
+    mode: https
+    url: "https://gitlab.com/networkAutomation/git_test_module.git"
+- debug: var=result
+- assert: { that: result.changed }
+
+- name: 10060 - SETUP | debug new remote set.
+  shell: git -C "{{ working_dir }}" remote -v
+  register: remote
+- debug: var=remote
+- assert: { that: "'test_origin' in remote.stdout" }
+
+- name: 10065 - SETUP | rm file1.
+  file:
+    path: "{{ working_dir }}/{{ item }}"
+    state: absent
+  loop:
+    - "{{ file1 }}"
+
+- name: 10070 - SSH | remove "{{ file1 }}" to default origin.
+  register: result
+  git_acp:
+    path: "{{ working_dir }}"
+    branch: master
+    comment: Add file1.
+    add: [ "{{ file1 }}" ]
+    push_option: ci.skip
+    mode: ssh
+    url: "git@gitlab.com:networkAutomation/git_test_module.git"
+- debug: var=result
+- assert: { that: result.changed }
+
+- name: 10075 - SETUP | debug default remote set.
+  shell: git -C "{{ working_dir }}" remote get-url --all origin
+  register: remote
+- debug: var=origin
+
+- name: 10080 - HTTPS | fail because ssh URL.
+  register: result
+  git_acp:
+    user: "{{ user }}"
+    token: "{{ token }}"
+    path: "{{ working_dir }}"
+    branch: master
+    comment: fail because ssh URL
+    add: [ "." ]
+    mode: https
+    url: "git@gitlab.com:networkAutomation/git_test_module.git"
+  ignore_errors: yes
+- debug: var=result
+- assert: { that: not result.changed }
+
+- name: 10085 - SSH | fail because https URL.
+  register: result
+  git_acp:
+    path: "{{ working_dir }}"
+    branch: master
+    comment: fail because https URL
+    add: [ "." ]
+    mode: ssh
+    url: "https://gitlab.com/networkAutomation/git_test_module.git"
+  ignore_errors: yes
+- debug: var=result
+- assert: { that: not result.changed }
+
+- name: 10090 - SSH | fail because ssh:// in GitHub.
+  register: result
+  git_acp:
+    path: "{{ working_dir }}"
+    branch: master
+    comment: fail because ssh in GitHub
+    add: [ "." ]
+    mode: ssh
+    url: "ssh://git@github.com:lvrfrc87/git-acp-test.git"
+  ignore_errors: yes
+- debug: var=result
+- assert: { that: not result.changed }
+
+- name: 10091 - SSH | set user.name and user.email
+  register: result
+  git_acp:
+    path: "{{ working_dir }}"
+    branch: master
+    comment: add user and email only
+    add: [ "." ]
+    mode: ssh
+    url: "git@gitlab.com:networkAutomation/git_test_module.git"
+    user_name: test_user
+    user_email: test_user@git.com
+- debug: var=result
+- assert: { that: result.changed }
+
+- name: 10092 - SETUP | debug new user.name.
+  shell: git -C {{ working_dir }} config --local user.name
+  register: user
+- debug: var=user
+- assert: { that: "'test_user' in user.stdout" }
+
+- name: 10093 - SETUP | debug new user.email.
+  shell: git -C {{ working_dir }} config --local user.email
+  register: email
+- debug: var=email
+- assert: { that: "'test_user@git.com' in email.stdout" }
+
+- name: 10094 - HTTPS | fail because user_name but not user_mail.
+  register: result
+  git_acp:
+    user: "{{ user }}"
+    token: "{{ token }}"
+    path: "{{ working_dir }}"
+    branch: master
+    comment: fail because user_name only
+    add: [ "." ]
+    mode: https
+    user_name: test_user
+    url: "git@gitlab.com:networkAutomation/git_test_module.git"
+  ignore_errors: yes
+- debug: var=result
+- assert: { that: not result.changed }
+
+- name: 10095 - SETUP | remove test directory.
+  file:
+    path: "{{ working_dir }}/test_directory"
+    state: absent
+
+- name: 10100 - SETUP | create test directory.
+  file:
+    path: "{{ working_dir }}/test_directory"
+    state: directory
+
+- name: 10105 - SETUP | create local bare repo
+  shell: "{{ item }}"
+  loop:
+    - "git -C {{ working_dir }}/test_directory init --bare repo.git"
+    - "git -C {{ working_dir }}/test_directory clone repo.git -l"
+
+- name: 10110 - SETUP | touch file1.
+  file:
+    path: "{{ working_dir }}/test_directory/repo/{{ item }}"
+    state: touch
+  loop:
+    - "{{ file1 }}"
+
+- name: 10110 - LOCAL | push on local repo.
+  register: result
+  git_acp:
+    path: "{{ working_dir }}/test_directory/repo"
+    branch: master
+    comment: Add file1.
+    add: [ "{{ file1 }}" ]
+    mode: local
+    url: "{{ working_dir }}/test_directory/repo.git"
+    user_name: "lvrfrc87"
+    user_email: "lvrfrc87@gmail.com"
+  ignore_errors: yes
+- debug: var=result
+- assert: { that: result.changed }
+
+- name: 10115 - LOCAL | fail beacuse push_option
+  register: result
+  git_acp:
+    path: "{{ working_dir }}/test_directory/repo"
+    branch: master
+    comment: Add file1.
+    add: [ "{{ file1 }}" ]
+    mode: local
+    url: "{{ working_dir }}/test_directory/repo.git"
+    push_option: ci.skip
+  ignore_errors: yes
+- debug: var=result
+- assert: { that: not result.changed }
+
+- name: 10120 - SETUP | delete test file.
+  file:
+    path: "{{ working_dir }}/{{ item }}"
+    state: absent
+  ignore_errors: yes
+  loop:
+    - "{{ file1 }}"

@@ -1,0 +1,30 @@
+{
+ "collection_info": {
+  "namespace": "lvrfrc87",
+  "name": "git_acp",
+  "version": "1.1.3",
+  "authors": [
+   "Federico Olivieri <lvrfrc87@gmail.com>"
+  ],
+  "readme": "README.md",
+  "tags": [],
+  "description": "Manage git add, git commit, git push and git config user on a local or remote git repository.",
+  "license": [
+   "GPL-3.0-only"
+  ],
+  "license_file": null,
+  "dependencies": {},
+  "repository": "https://github.com/lvrfrc87/git-acp-ansible",
+  "documentation": "https://github.com/lvrfrc87/git-acp-ansible/blob/master/README.md",
+  "homepage": "https://github.com/lvrfrc87/git-acp-ansible",
+  "issues": "https://github.com/lvrfrc87/git-acp-ansible/issues"
+ },
+ "file_manifest_file": {
+  "name": "FILES.json",
+  "ftype": "file",
+  "chksum_type": "sha256",
+  "chksum_sha256": "74cf230ed1d43a6203967eec2127974282ecd839dba1a7c55502b72093168063",
+  "format": 1
+ },
+ "format": 1
+}
