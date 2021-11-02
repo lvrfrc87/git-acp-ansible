@@ -82,7 +82,7 @@
 
 - name: 10033 - SETUP | touch file1.
   file:
-    path: "{{ working_dir }}/{{ item }}"
+    path: "{{ working_dir }}{{ item }}"
     state: touch
   loop:
     - "{{ file1 }}"
@@ -105,7 +105,7 @@
 
 - name: 10040 - SETUP | rm file1.
   file:
-    path: "{{ working_dir }}/{{ item }}"
+    path: "{{ working_dir }}{{ item }}"
     state: absent
   loop:
     - "{{ file1 }}"
@@ -125,7 +125,7 @@
 
 - name: 10050 - SETUP | touch file1.
   file:
-    path: "{{ working_dir }}/{{ item }}"
+    path: "{{ working_dir }}{{ item }}"
     state: touch
   loop:
     - "{{ file1 }}"
@@ -154,7 +154,7 @@
 
 - name: 10065 - SETUP | rm file1.
   file:
-    path: "{{ working_dir }}/{{ item }}"
+    path: "{{ working_dir }}{{ item }}"
     state: absent
   loop:
     - "{{ file1 }}"
@@ -314,7 +314,7 @@
 
 - name: 10120 - SETUP | delete test file.
   file:
-    path: "{{ working_dir }}/{{ item }}"
+    path: "{{ working_dir }}{{ item }}"
     state: absent
   ignore_errors: yes
   loop:
