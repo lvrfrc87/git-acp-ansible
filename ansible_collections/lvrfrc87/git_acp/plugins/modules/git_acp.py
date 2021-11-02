@@ -131,6 +131,38 @@ output:
 from ansible.module_utils.basic import AnsibleModule
 
 
+def failing_message(module, rc, command, output, error):
+    """
+    Failing message function for rc codes != 0.
+
+    args:
+        * module:
+            type: dict()
+            descrition: Ansible basic module utilities and module arguments.
+        * rc:
+            type: int()
+            descrition: rc code returned by shell command.
+        * command:
+            type: list()
+            descrition: list of string that compose the shell command.
+        * output:
+            type: str()
+            descrition: stdout returned by the shell.
+        * error:
+            type: str()
+            descrition: stderreturned by the shell.
+
+    return: None
+    """
+    module.fail_json(
+        rc=rc,
+        msg="Error in running '{command}' command".format(command=' '.join(command)),
+        command=' '.join(command),
+        stdout=output,
+        stderr=error,
+    )
+
+
 def user_conifg(module):
     """
     Config git local user.name and user.email.
@@ -142,60 +174,39 @@ def user_conifg(module):
     return:
         * result:
             type: dict()
-            desription: update change status.
+            desription: updated changed status.
     """
     result = dict()
-    user_name = module.params.get('user_name')
-    user_email = module.params.get('user_email')
     path = module.params.get('path')
-
-    get_name_cmd = [
-        'git',
-        'config',
-        '--local',
-        'user.name',
+    parameters = [
+        'name',
+        'email',
     ]
 
-    _rc, output, _error = module.run_command(get_name_cmd, cwd=path)
-    if output != user_name:
+    for parameter in parameters:
+        config_parameter = module.params.get('user_{parameter}'.format(parameter=parameter))
 
-        name_cmd = [
-            'git',
-            'config',
-            '--local',
-            'user.name',
-            user_name
-        ]
+        if config_parameter:
+            command = [
+                'git',
+                'config',
+                '--local',
+                'user.{parameter}'.format(parameter=parameter),
+            ]
 
-        conf_name = module.run_command(name_cmd, cwd=path)
-        result.update(
-            local_user_name=conf_name,
-            changed=True
-        )
+            _rc, output, _error = module.run_command(command, cwd=path)
 
-    get_email_cmd = [
-        'git',
-        'config',
-        '--local',
-        'user.email',
-    ]
+            if output != config_parameter:
 
-    _rc, output, _error = module.run_command(get_email_cmd, cwd=path)
-    if output != user_email:
+                command.append(config_parameter)
+                _rc, output, _error = module.run_command(command, cwd=path)
 
-        email_cmd = [
-            'git',
-            'config',
-            '--local',
-            'user.email',
-            user_email
-        ]
-
-        conf_email = module.run_command(email_cmd, cwd=path)
-        result.update(
-            local_user_email=conf_email,
-            changed=True
-        )
+                result.update(
+                    {
+                        "{parameter}".format(parameter=parameter): output,
+                        "changed": True
+                    }
+                )
 
     return result
 
@@ -213,18 +224,18 @@ def git_add(module):
     add = module.params.get('add')
     path = module.params.get('path')
 
-    add_cmd = [
+    command = [
         'git',
         'add',
         '--',
     ]
-    add_cmd.extend(add)
+    command.extend(add)
 
-    rc, _output, error = module.run_command(add_cmd, cwd=path)
+    rc, output, error = module.run_command(command, cwd=path)
 
     if rc != 0:
-        module.fail_json(rc=rc, msg=error, command=' '.join(add_cmd))
-    if rc == 0:
+        failing_message(module, rc, command, output, error)
+    elif rc == 0:
         return
 
 
@@ -243,17 +254,17 @@ def git_status(module):
     """
     data = set()
     path = module.params.get('path')
-    status_cmd = [
+    command = [
         'git',
         'status',
         '--porcelain',
     ]
 
-    rc, output, error = module.run_command(status_cmd, cwd=path)
+    rc, output, error = module.run_command(command, cwd=path)
 
     if rc != 0:
-        module.fail_json(rc=rc, msg=error, command=' '.join(status_cmd))
-    if rc == 0:
+        failing_message(module, rc, command, output, error)
+    elif rc == 0:
         for line in output.split('\n'):
             file_name = line.split(' ')[-1].strip()
             if file_name:
@@ -281,18 +292,18 @@ def git_commit(module):
     if comment:
         git_add(module)
 
-        commit_cmd = [
+        command = [
             'git',
             'commit',
             '-m',
             comment,
         ]
 
-    rc, output, error = module.run_command(commit_cmd, cwd=path)
+    rc, output, error = module.run_command(command, cwd=path)
 
     if rc != 0:
-        module.fail_json(rc=rc, msg=error, command=' '.join(commit_cmd))
-    if rc == 0:
+        failing_message(module, rc, command, output, error)
+    elif rc == 0:
         if output:
             result.update(
                 git_commit=output,
@@ -381,11 +392,11 @@ def git_push(module):
                     url,
                 ]
 
-            rc, _output, error = module.run_command(remote_add_cmd, cwd=path)
+            rc, output, error = module.run_command(remote_add_cmd, cwd=path)
 
             if rc != 0:
-                module.fail_json(msg=error, command=' '.join(remote_add_cmd), rc=rc)
-            if rc == 0:
+                failing_message(module, rc, remote_add_cmd, output, error)
+            elif rc == 0:
                 return
 
     def git_push_cmd():
@@ -409,8 +420,8 @@ def git_push(module):
         rc, output, error = module.run_command(push_cmd, cwd=path)
 
         if rc != 0:
-            module.fail_json(msg=str(error) + str(output))
-        if rc == 0:
+            failing_message(module, rc, push_cmd, output, error)
+        elif rc == 0:
             result.update(
                 git_push=str(error) + str(output),
                 changed=True
@@ -422,7 +433,7 @@ def git_push(module):
         return git_push_cmd()
 
     if push_option:
-        push_cmd.insert(3, '--push-option={0} '.format(push_option))
+        push_cmd.insert(3, '--push-option={push_option} '.format(push_option=push_option))
         git_set_url()
         return git_push_cmd()
 
