@@ -1,3 +1,7 @@
+# Ver. 1.2.0
+
+- Minor code refactoring
+
 # Ver. 1.1.3
 
 - Add default "origin" in remote
