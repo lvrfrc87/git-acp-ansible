@@ -1,10 +1,13 @@
-from exceptions import FailingMessage
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
+from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.exceptions import FailingMessage
+
 
 class Git:
 
     def __init__(self, module):
         self.module = module
-
 
     def add(self):
         """
@@ -14,14 +17,14 @@ class Git:
             * module:
                 type: dict()
                 descrition: Ansible basic module utilities and module arguments.
-        
+
         return: null
         """
-        
+
         add = self.module.params['add']
         path = self.module.params['path']
         command = ['git', 'add', '--']
-        
+
         command.extend(add)
 
         rc, output, error = self.module.run_command(command, cwd=path)
@@ -30,7 +33,6 @@ class Git:
             return
         else:
             FailingMessage(self.module, rc, command, output, error)
-
 
     def status(self):
         """
@@ -61,7 +63,6 @@ class Git:
         else:
             FailingMessage(self.module, rc, command, output, error)
 
-
     def commit(self):
         """
         Run git commit and commit files in repo.
@@ -81,14 +82,13 @@ class Git:
         command = ['git', 'commit', '-m', comment]
 
         rc, output, error = self.module.run_command(command, cwd=path)
-            
+
         if rc == 0:
             if output:
                 result.update({"git_commit": output, "changed": True})
                 return result
         else:
             FailingMessage(self.module, rc, command, output, error)
-
 
     def push(self):
         """
@@ -140,8 +140,8 @@ class Git:
                             'git',
                             'remote',
                             'add',
-                            origin, 
-                            f'https://{user}:{token}@{url[8:]}'
+                            origin,
+                            'https://{0}:{1}@{2}'.format(user, token, url[8:])
                         ]
                     else:
                         self.module.fail_json(msg='HTTPS mode selected but not HTTPS URL provided')
@@ -154,7 +154,6 @@ class Git:
                     return
                 else:
                     FailingMessage(self.module, rc, command, output, error)
-
 
         def push_cmd():
             """
@@ -182,10 +181,9 @@ class Git:
             else:
                 FailingMessage(self.module, rc, command, output, error)
 
-
         if push_option:
-            command.insert(3, f'--push-option={push_option} ')
+            command.insert(3, '--push-option={0} '.format(push_option))
 
         set_url()
-        
+
         return push_cmd()

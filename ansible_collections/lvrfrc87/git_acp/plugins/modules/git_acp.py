@@ -48,7 +48,7 @@ options:
         description:
             - Git branch where perform git push.
         type: str
-        default: master
+        default: main
     push_option:
         description:
             - Git push options. Same as C(git --push-option=option).
@@ -129,8 +129,8 @@ output:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from modules_utils.git_actions import Git
-from modules_utils.git_configuration import GitConfiguration
+from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.git_actions import Git
+from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.git_configuration import GitConfiguration
 
 
 def main():
