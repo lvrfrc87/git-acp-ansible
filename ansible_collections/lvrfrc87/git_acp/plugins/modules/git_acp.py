@@ -48,7 +48,7 @@ options:
         description:
             - Git branch where perform git push.
         type: str
-        default: master
+        default: main
     push_option:
         description:
             - Git push options. Same as C(git --push-option=option).
@@ -129,313 +129,8 @@ output:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-
-
-def failing_message(module, rc, command, output, error):
-    """
-    Failing message function for rc codes != 0.
-
-    args:
-        * module:
-            type: dict()
-            descrition: Ansible basic module utilities and module arguments.
-        * rc:
-            type: int()
-            descrition: rc code returned by shell command.
-        * command:
-            type: list()
-            descrition: list of string that compose the shell command.
-        * output:
-            type: str()
-            descrition: stdout returned by the shell.
-        * error:
-            type: str()
-            descrition: stderreturned by the shell.
-
-    return: None
-    """
-    module.fail_json(
-        rc=rc,
-        msg="Error in running '{command}' command".format(command=' '.join(command)),
-        command=' '.join(command),
-        stdout=output,
-        stderr=error,
-    )
-
-
-def user_conifg(module):
-    """
-    Config git local user.name and user.email.
-
-    args:
-        * module:
-            type: dict()
-            descrition: Ansible basic module utilities and module arguments.
-    return:
-        * result:
-            type: dict()
-            desription: updated changed status.
-    """
-    result = dict()
-    path = module.params.get('path')
-    parameters = [
-        'name',
-        'email',
-    ]
-
-    for parameter in parameters:
-        config_parameter = module.params.get('user_{parameter}'.format(parameter=parameter))
-
-        if config_parameter:
-            command = [
-                'git',
-                'config',
-                '--local',
-                'user.{parameter}'.format(parameter=parameter),
-            ]
-
-            _rc, output, _error = module.run_command(command, cwd=path)
-
-            if output != config_parameter:
-
-                command.append(config_parameter)
-                _rc, output, _error = module.run_command(command, cwd=path)
-
-                result.update(
-                    {
-                        "{parameter}".format(parameter=parameter): output,
-                        "changed": True
-                    }
-                )
-
-    return result
-
-
-def git_add(module):
-    """
-    Run git add and stage changed files.
-
-    args:
-        * module:
-            type: dict()
-            descrition: Ansible basic module utilities and module arguments.
-    return: null
-    """
-    add = module.params.get('add')
-    path = module.params.get('path')
-
-    command = [
-        'git',
-        'add',
-        '--',
-    ]
-    command.extend(add)
-
-    rc, output, error = module.run_command(command, cwd=path)
-
-    if rc != 0:
-        failing_message(module, rc, command, output, error)
-    elif rc == 0:
-        return
-
-
-def git_status(module):
-    """
-    Run git status and check if repo has changes.
-
-    args:
-        * module:
-            type: dict()
-            descrition: Ansible basic module utilities and module arguments.
-    return:
-        * data:
-            type: set()
-            description: list of files changed in repo.
-    """
-    data = set()
-    path = module.params.get('path')
-    command = [
-        'git',
-        'status',
-        '--porcelain',
-    ]
-
-    rc, output, error = module.run_command(command, cwd=path)
-
-    if rc != 0:
-        failing_message(module, rc, command, output, error)
-    elif rc == 0:
-        for line in output.split('\n'):
-            file_name = line.split(' ')[-1].strip()
-            if file_name:
-                data.add(file_name)
-    return data
-
-
-def git_commit(module):
-    """
-    Run git commit and commit files in repo.
-
-    args:
-        * module:
-            type: dict()
-            descrition: Ansible basic module utilities and module arguments.
-    return:
-        * result:
-            type: dict()
-            desription: returned output from git commit command and changed status
-    """
-    result = dict()
-    comment = module.params.get('comment')
-    path = module.params.get('path')
-
-    if comment:
-        git_add(module)
-
-        command = [
-            'git',
-            'commit',
-            '-m',
-            comment,
-        ]
-
-    rc, output, error = module.run_command(command, cwd=path)
-
-    if rc != 0:
-        failing_message(module, rc, command, output, error)
-    elif rc == 0:
-        if output:
-            result.update(
-                git_commit=output,
-                changed=True
-            )
-            return result
-
-
-def git_push(module):
-    """
-    Set URL and remote if required. Push changes to remote repo.
-
-    args:
-        * module:
-            type: dict()
-            descrition: Ansible basic module utilities and module arguments.
-    return:
-        * result:
-            type: dict()
-            desription: returned output from git push command and updated changed status.
-    """
-    url = module.params.get('url')
-    mode = module.params.get('mode')
-    user = module.params.get('user')
-    token = module.params.get('token')
-    origin = module.params.get('remote')
-    branch = module.params.get('branch')
-    push_option = module.params.get('push_option')
-    path = module.params.get('path')
-    origin = module.params.get('remote')
-
-    push_cmd = [
-        'git',
-        'push',
-        origin,
-        branch,
-    ]
-
-    def git_set_url():
-        """
-        Set URL and remote if required.
-
-        args:
-            * module:
-                type: dict()
-                descrition: Ansible basic module utilities and module arguments.
-        return: null
-        """
-        get_url_cmd = [
-            'git',
-            'remote',
-            'get-url',
-            '--all',
-            origin,
-        ]
-
-        path = module.params.get('path')
-
-        rc, _output, _error = module.run_command(get_url_cmd, cwd=path)
-
-        if rc == 0:
-            return
-
-        if rc == 128:
-            if mode == 'https':
-                if url.startswith('https://'):
-                    remote_add_cmd = [
-                        'git',
-                        'remote',
-                        'add',
-                        origin,
-                        'https://{user}:{token}@{url}'.format(
-                            url=url[8:],
-                            user=user,
-                            token=token,
-                        ),
-                    ]
-                else:
-                    module.fail_json(msg='HTTPS mode selected but not HTTPS URL provided')
-            else:
-                remote_add_cmd = [
-                    'git',
-                    'remote',
-                    'add',
-                    origin,
-                    url,
-                ]
-
-            rc, output, error = module.run_command(remote_add_cmd, cwd=path)
-
-            if rc != 0:
-                failing_message(module, rc, remote_add_cmd, output, error)
-            elif rc == 0:
-                return
-
-    def git_push_cmd():
-        """
-        Set URL and remote if required. Push changes to remote repo.
-
-        args:
-            * path:
-                type: path
-                descrition: git repo local path.
-            * cmd_push:
-                type: list()
-                descrition: list of commands to perform git push operation.
-        return:
-            * result:
-                type: dict()
-                desription: returned output from git push command and updated changed status.
-        """
-        result = dict()
-
-        rc, output, error = module.run_command(push_cmd, cwd=path)
-
-        if rc != 0:
-            failing_message(module, rc, push_cmd, output, error)
-        elif rc == 0:
-            result.update(
-                git_push=str(error) + str(output),
-                changed=True
-            )
-            return result
-
-    if not push_option:
-        git_set_url()
-        return git_push_cmd()
-
-    if push_option:
-        push_cmd.insert(3, '--push-option={push_option} '.format(push_option=push_option))
-        git_set_url()
-        return git_push_cmd()
+from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.git_actions import Git
+from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.git_configuration import GitConfiguration
 
 
 def main():
@@ -454,7 +149,7 @@ def main():
         add=dict(type='list', elements='str', default=['.']),
         user=dict(),
         token=dict(no_log=True),
-        branch=dict(default='master'),
+        branch=dict(default='main'),
         push_option=dict(),
         mode=dict(choices=['ssh', 'https', 'local'], default='ssh'),
         url=dict(required=True),
@@ -490,11 +185,11 @@ def main():
         if push_option:
             module.fail_json(msg='"--push-option" not supported with mode "local"')
 
-    if mode == 'https':
+    elif mode == 'https':
         if not url.startswith('https://'):
             module.fail_json(msg='HTTPS mode selected but url (' + url + ') not starting with "https"')
 
-    if mode == 'ssh':
+    elif mode == 'ssh':
         if not url.startswith(('git', 'ssh://git')):
             module.fail_json(
                 msg='SSH mode selected but url (' + url + ') not starting with "git" or "ssh://git"'
@@ -505,17 +200,18 @@ def main():
 
     result = dict(changed=False)
 
+    git = Git(module)
     if user_name and user_email:
-        result.update(user_conifg(module))
+        result.update(GitConfiguration(module).user_config())
 
-    changed_files = git_status(module)
+    changed_files = git.status()
 
     if changed_files:
-        result.update(git_commit(module))
-        result.update(git_push(module))
+        git.add()
+        result.update(git.commit())
+        result.update(git.push())
 
-    if result:
-        module.exit_json(**result)
+    module.exit_json(**result)
 
 
 if __name__ == "__main__":
