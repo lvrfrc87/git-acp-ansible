@@ -31,7 +31,7 @@ class Git:
 
         if rc == 0:
             return
-        
+
         FailingMessage(self.module, rc, command, output, error)
 
     def status(self):
