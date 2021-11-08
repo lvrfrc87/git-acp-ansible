@@ -204,7 +204,7 @@ def main():
     if user_name and user_email:
         result.update(GitConfiguration(module).user_conifg())
 
-    changed_files = git.git_status()
+    changed_files = git.status()
 
     if changed_files:
         git.add()
