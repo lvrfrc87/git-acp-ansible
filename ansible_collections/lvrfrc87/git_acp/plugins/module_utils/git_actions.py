@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.exceptions import FailingMessage
+from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.messages import FailingMessage
 
 
 class Git:
