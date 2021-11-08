@@ -7,7 +7,7 @@ class GitConfiguration:
     def __init__(self, module):
         self.module = module
 
-    def user_conifg(self):
+    def user_config(self):
         """
         Config git local user.name and user.email.
 

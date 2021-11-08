@@ -202,7 +202,7 @@ def main():
 
     git = Git(module)
     if user_name and user_email:
-        result.update(GitConfiguration(module).user_conifg())
+        result.update(GitConfiguration(module).user_config())
 
     changed_files = git.status()
 
