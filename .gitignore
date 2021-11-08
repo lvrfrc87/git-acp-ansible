@@ -1,6 +1,6 @@
 # Custom
 .vscode
-./git-acp-ansible/ansible_collections/lvrfrc87/git_acp/tests/output
+ansible_collections/lvrfrc87/git_acp/tests/output
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
