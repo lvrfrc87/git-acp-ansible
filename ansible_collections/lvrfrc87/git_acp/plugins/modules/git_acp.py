@@ -145,6 +145,10 @@ def main():
     """
     argument_spec = dict(
         path=dict(required=True, type='path'),
+        accept_hostkey=dict(default='no', type='bool'),
+        ssh_opts=dict(default=None, required=False),
+        key_file=dict(default=None, type='path', required=False),
+        executable=dict(default=None, type='path'),
         comment=dict(required=True),
         add=dict(type='list', elements='str', default=['.']),
         user=dict(),
@@ -177,6 +181,20 @@ def main():
     mode = module.params.get('mode')
     user_name = module.params.get('user_name')
     user_email = module.params.get('user_email')
+    git_path = module.params['executable'] or module.get_bin_path('git', True)
+    key_file = module.params['key_file']
+    ssh_opts = module.params['ssh_opts']
+
+    if module.params['accept_hostkey']:
+        if ssh_opts is not None:
+            if "-o StrictHostKeyChecking=no" not in ssh_opts:
+                ssh_opts += " -o StrictHostKeyChecking=no"
+        else:
+            ssh_opts = "-o StrictHostKeyChecking=no"
+
+    # We screenscrape a huge amount of git commands so use C locale anytime we
+    # call run_command()
+    module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
     if mode == 'local':
         if url.startswith(('https://', 'git', 'ssh://git')):
@@ -200,7 +218,8 @@ def main():
 
     result = dict(changed=False)
 
-    git = Git(module)
+    git = Git(module, git_path, key_file, ssh_opts)
+
     if user_name and user_email:
         result.update(GitConfiguration(module).user_config())
 
