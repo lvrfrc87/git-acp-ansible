@@ -89,6 +89,11 @@ options:
     key_file:
         description:
             - Specify an optional private key file path, on the target host, to use for the checkout.
+    executable:
+        description:
+            - Path to git executable to use. If not supplied,
+              the normal mechanism for resolving binary paths will be used.
+        version_added: "1.4"
     remote:
         description:
             - Local system alias for git remote PUSH and PULL repository operations.
