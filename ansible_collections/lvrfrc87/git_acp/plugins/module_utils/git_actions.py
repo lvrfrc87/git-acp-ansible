@@ -13,7 +13,6 @@ class Git:
 
     def __init__(self, module):
         self.module = module
-        self.git_path = git_path
 
         self.url = self.module.params['url']
         self.path = self.module.params['path']
