@@ -148,7 +148,6 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.git_actions import Git
 from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.git_configuration import GitConfiguration
 
-
 def main():
     """
     Code entrypoint.
@@ -234,7 +233,7 @@ def main():
 
     result = dict(changed=False)
 
-    git = Git(module, git_path, key_file, ssh_opts)
+    git = Git(module)
 
     if user_name and user_email:
         result.update(GitConfiguration(module).user_config())

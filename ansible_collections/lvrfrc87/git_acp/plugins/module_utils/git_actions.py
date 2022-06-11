@@ -11,13 +11,19 @@ from ansible.module_utils.six import b
 
 class Git:
 
-    def __init__(self, module, git_path='git', key_file=None, ssh_opts=None):
+    def __init__(self, module):
         self.module = module
         self.git_path = git_path
 
-        ssh_wrapper = self.write_ssh_wrapper(module.tmpdir)
-        self.set_git_ssh(ssh_wrapper, key_file, ssh_opts)
-        module.add_cleanup_file(path=ssh_wrapper)
+        self.url = self.module.params['url']
+        self.path = self.module.params['path']
+        self.git_path = self.module.params['executable'] or self.module.get_bin_path('git', True)
+        self.key_file = self.module.params['key_file']
+        self.ssh_opts = self.module.params['ssh_opts']
+
+        self.ssh_wrapper = self.write_ssh_wrapper(module.tmpdir)
+        self.set_git_ssh(self.ssh_wrapper, self.key_file, self.ssh_opts)
+        module.add_cleanup_file(path=self.ssh_wrapper)
 
     ## ref: https://github.com/ansible/ansible/blob/05b90ab69a3b023aa44b812c636bb2c48e30108e/lib/ansible/modules/git.py#L368
     def write_ssh_wrapper(self, module_tmpdir):
@@ -86,12 +92,11 @@ fi
         """
 
         add = self.module.params['add']
-        path = self.module.params['path']
         command = [self.git_path, 'add', '--']
 
         command.extend(add)
 
-        rc, output, error = self.module.run_command(command, cwd=path)
+        rc, output, error = self.module.run_command(command, cwd=self.path)
 
         if rc == 0:
             return
@@ -112,10 +117,9 @@ fi
                 description: list of files changed in repo.
         """
         data = set()
-        path = self.module.params['path']
         command = [self.git_path, 'status', '--porcelain']
 
-        rc, output, error = self.module.run_command(command, cwd=path)
+        rc, output, error = self.module.run_command(command, cwd=self.path)
 
         if rc == 0:
             for line in output.split('\n'):
@@ -142,10 +146,9 @@ fi
         """
         result = dict()
         comment = self.module.params['comment']
-        path = self.module.params['path']
         command = [self.git_path, 'commit', '-m', comment]
 
-        rc, output, error = self.module.run_command(command, cwd=path)
+        rc, output, error = self.module.run_command(command, cwd=self.path)
 
         if rc == 0:
             if output:
@@ -171,7 +174,6 @@ fi
         mode = self.module.params['mode']
         origin = self.module.params['remote']
         branch = self.module.params['branch']
-        path = self.module.params['path']
         origin = self.module.params['remote']
         push_option = self.module.params.get('push_option')
         user = self.module.params.get('user')
@@ -190,9 +192,8 @@ fi
             return: null
             """
             command = [self.git_path, 'remote', 'get-url', '--all', origin]
-            path = self.module.params['path']
 
-            rc, _output, _error = self.module.run_command(command, cwd=path)
+            rc, _output, _error = self.module.run_command(command, cwd=self.path)
 
             if rc == 0:
                 return
@@ -212,7 +213,7 @@ fi
                 else:
                     command = [self.git_path, 'remote', 'add', origin, url]
 
-                rc, output, error = self.module.run_command(command, cwd=path)
+                rc, output, error = self.module.run_command(command, cwd=self.path)
 
                 if rc == 0:
                     return
@@ -237,7 +238,7 @@ fi
             """
             result = dict()
 
-            rc, output, error = self.module.run_command(command, cwd=path)
+            rc, output, error = self.module.run_command(command, cwd=self.path)
 
             if rc == 0:
                 result.update({"git_push": str(error) + str(output), "changed": True})
