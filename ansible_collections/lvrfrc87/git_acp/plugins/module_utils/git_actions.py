@@ -17,11 +17,23 @@ class Git:
         self.url = self.module.params['url']
         self.path = self.module.params['path']
         self.git_path = self.module.params['executable'] or self.module.get_bin_path('git', True)
-        self.key_file = self.module.params['key_file']
-        self.ssh_opts = self.module.params['ssh_opts']
+
+        ssh_params = self.module.params['ssh_params']
+
+        if ssh_params:
+            self.ssh_key_file = ssh_params['key_file']
+            self.ssh_opts = ssh_params['ssh_opts']
+            self.ssh_accept_hostkey = ssh_params['accept_hostkey']
+
+            if self.ssh_accept_hostkey:
+                if self.ssh_opts is not None:
+                    if "-o StrictHostKeyChecking=no" not in self.ssh_opts:
+                        self.ssh_opts += " -o StrictHostKeyChecking=no"
+                else:
+                    self.ssh_opts = "-o StrictHostKeyChecking=no"
 
         self.ssh_wrapper = self.write_ssh_wrapper(module.tmpdir)
-        self.set_git_ssh(self.ssh_wrapper, self.key_file, self.ssh_opts)
+        self.set_git_ssh(self.ssh_wrapper, self.ssh_key_file, self.ssh_opts)
         module.add_cleanup_file(path=self.ssh_wrapper)
 
     ## ref: https://github.com/ansible/ansible/blob/05b90ab69a3b023aa44b812c636bb2c48e30108e/lib/ansible/modules/git.py#L368
