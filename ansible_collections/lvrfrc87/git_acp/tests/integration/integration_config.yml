@@ -2,3 +2,12 @@
 user: "Federico87"
 token: "glpat-byFwqxbb3jEf339bAFLS"
 working_dir: "$HOME/git_acp_test/"
+
+ssh_private_key: |
+  -----BEGIN RSA PRIVATE KEY-----
+  MIIEpAIBAAKCAQEAzF9HT3L6IiyEd6nb/hVyxP8omtUWIGtvEwZHMu+tsvyOXYDb
+  NYSja/ZQhpVo9PDIoms2/wVEuzg/T28VnOEiuATsHap/yzABInttyWzJYQlUsBJZ
+  fFP6I1tTZtDq3zpyugiI5H/JV7ExtIyfAwu0BsxgC3kCVKSzeKU761pNnSeuoxjh
+  ...
+  tF5wv2frH/QhUABPFn4ihFBsdyXRnR5+wzP3rRB77Cp+JaFDr6hxBA==
+  -----END RSA PRIVATE KEY-----
