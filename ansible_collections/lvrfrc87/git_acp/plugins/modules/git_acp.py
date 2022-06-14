@@ -69,8 +69,7 @@ options:
         description:
             - Dictionary containing SSH parameters.
         type: dict
-        default: None
-        options:
+        suboptions:
             key_file:
                 description:
                     - Specify an optional private key file path, on the target host, to use for the checkout.
@@ -93,7 +92,8 @@ options:
         description:
             - Path to git executable to use. If not supplied,
               the normal mechanism for resolving binary paths will be used.
-        version_added: "1.4"
+        type: path
+        version_added: "1.4.0"
     remote:
         description:
             - Local system alias for git remote PUSH and PULL repository operations.
@@ -160,6 +160,7 @@ output:
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.git_actions import Git
 from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.git_configuration import GitConfiguration
+
 
 def main():
     """
