@@ -1,13 +1,94 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
+import os
+import stat
+import tempfile
+
 from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.messages import FailingMessage
+from ansible.module_utils.six import b
 
 
 class Git:
 
     def __init__(self, module):
         self.module = module
+
+        self.url = self.module.params['url']
+        self.path = self.module.params['path']
+        self.git_path = self.module.params['executable'] or self.module.get_bin_path('git', True)
+
+        ssh_params = self.module.params['ssh_params']
+
+        if ssh_params:
+            self.ssh_key_file = ssh_params['key_file']
+            self.ssh_opts = ssh_params['ssh_opts']
+            self.ssh_accept_hostkey = ssh_params['accept_hostkey']
+
+            if self.ssh_accept_hostkey:
+                if self.ssh_opts is not None:
+                    if "-o StrictHostKeyChecking=no" not in self.ssh_opts:
+                        self.ssh_opts += " -o StrictHostKeyChecking=no"
+                else:
+                    self.ssh_opts = "-o StrictHostKeyChecking=no"
+
+        self.ssh_wrapper = self.write_ssh_wrapper(module.tmpdir)
+        self.set_git_ssh(self.ssh_wrapper, self.ssh_key_file, self.ssh_opts)
+        module.add_cleanup_file(path=self.ssh_wrapper)
+
+    ## ref: https://github.com/ansible/ansible/blob/05b90ab69a3b023aa44b812c636bb2c48e30108e/lib/ansible/modules/git.py#L368
+    def write_ssh_wrapper(self, module_tmpdir):
+        try:
+            # make sure we have full permission to the module_dir, which
+            # may not be the case if we're sudo'ing to a non-root user
+            if os.access(module_tmpdir, os.W_OK | os.R_OK | os.X_OK):
+                fd, wrapper_path = tempfile.mkstemp(prefix=module_tmpdir + '/')
+            else:
+                raise OSError
+        except (IOError, OSError):
+            fd, wrapper_path = tempfile.mkstemp()
+
+        fh = os.fdopen(fd, 'w+b')
+        template = b("""#!/bin/sh
+if [ -z "$GIT_SSH_OPTS" ]; then
+    BASEOPTS=""
+else
+    BASEOPTS=$GIT_SSH_OPTS
+fi
+
+# Let ssh fail rather than prompt
+BASEOPTS="$BASEOPTS -o BatchMode=yes"
+
+if [ -z "$GIT_KEY" ]; then
+    ssh $BASEOPTS "$@"
+else
+    ssh -i "$GIT_KEY" -o IdentitiesOnly=yes $BASEOPTS "$@"
+fi
+""")
+        fh.write(template)
+        fh.close()
+        st = os.stat(wrapper_path)
+        os.chmod(wrapper_path, st.st_mode | stat.S_IEXEC)
+        return wrapper_path
+
+    ## ref: https://github.com/ansible/ansible/blob/05b90ab69a3b023aa44b812c636bb2c48e30108e/lib/ansible/modules/git.py#L402
+    def set_git_ssh(self, ssh_wrapper, key_file, ssh_opts):
+
+        if os.environ.get("GIT_SSH"):
+            del os.environ["GIT_SSH"]
+        os.environ["GIT_SSH"] = ssh_wrapper
+
+        if os.environ.get("GIT_KEY"):
+            del os.environ["GIT_KEY"]
+
+        if key_file:
+            os.environ["GIT_KEY"] = key_file
+
+        if os.environ.get("GIT_SSH_OPTS"):
+            del os.environ["GIT_SSH_OPTS"]
+
+        if ssh_opts:
+            os.environ["GIT_SSH_OPTS"] = ssh_opts
 
     def add(self):
         """
@@ -22,12 +103,11 @@ class Git:
         """
 
         add = self.module.params['add']
-        path = self.module.params['path']
-        command = ['git', 'add', '--']
+        command = [self.git_path, 'add', '--']
 
         command.extend(add)
 
-        rc, output, error = self.module.run_command(command, cwd=path)
+        rc, output, error = self.module.run_command(command, cwd=self.path)
 
         if rc == 0:
             return
@@ -48,10 +128,9 @@ class Git:
                 description: list of files changed in repo.
         """
         data = set()
-        path = self.module.params['path']
-        command = ['git', 'status', '--porcelain']
+        command = [self.git_path, 'status', '--porcelain']
 
-        rc, output, error = self.module.run_command(command, cwd=path)
+        rc, output, error = self.module.run_command(command, cwd=self.path)
 
         if rc == 0:
             for line in output.split('\n'):
@@ -78,10 +157,9 @@ class Git:
         """
         result = dict()
         comment = self.module.params['comment']
-        path = self.module.params['path']
-        command = ['git', 'commit', '-m', comment]
+        command = [self.git_path, 'commit', '-m', comment]
 
-        rc, output, error = self.module.run_command(command, cwd=path)
+        rc, output, error = self.module.run_command(command, cwd=self.path)
 
         if rc == 0:
             if output:
@@ -107,13 +185,12 @@ class Git:
         mode = self.module.params['mode']
         origin = self.module.params['remote']
         branch = self.module.params['branch']
-        path = self.module.params['path']
         origin = self.module.params['remote']
         push_option = self.module.params.get('push_option')
         user = self.module.params.get('user')
         token = self.module.params.get('token')
 
-        command = ['git', 'push', origin, branch]
+        command = [self.git_path, 'push', origin, branch]
 
         def set_url():
             """
@@ -125,10 +202,9 @@ class Git:
                     descrition: Ansible basic module utilities and module arguments.
             return: null
             """
-            command = ['git', 'remote', 'get-url', '--all', origin]
-            path = self.module.params['path']
+            command = [self.git_path, 'remote', 'get-url', '--all', origin]
 
-            rc, _output, _error = self.module.run_command(command, cwd=path)
+            rc, _output, _error = self.module.run_command(command, cwd=self.path)
 
             if rc == 0:
                 return
@@ -137,7 +213,7 @@ class Git:
                 if mode == 'https':
                     if url.startswith('https://'):
                         command = [
-                            'git',
+                            self.git_path,
                             'remote',
                             'add',
                             origin,
@@ -146,9 +222,9 @@ class Git:
                     else:
                         self.module.fail_json(msg='HTTPS mode selected but not HTTPS URL provided')
                 else:
-                    command = ['git', 'remote', 'add', origin, url]
+                    command = [self.git_path, 'remote', 'add', origin, url]
 
-                rc, output, error = self.module.run_command(command, cwd=path)
+                rc, output, error = self.module.run_command(command, cwd=self.path)
 
                 if rc == 0:
                     return
@@ -173,7 +249,7 @@ class Git:
             """
             result = dict()
 
-            rc, output, error = self.module.run_command(command, cwd=path)
+            rc, output, error = self.module.run_command(command, cwd=self.path)
 
             if rc == 0:
                 result.update({"git_push": str(error) + str(output), "changed": True})

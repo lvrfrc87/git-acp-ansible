@@ -73,6 +73,35 @@ options:
             - Git repo URL.
         required: True
         type: str
+    ssh_params:
+        description:
+            - Dictionary containing SSH parameters.
+        type: dict
+        default: None
+        options:
+            key_file:
+                description:
+                    - Specify an optional private key file path, on the target host, to use for the checkout.
+            accept_hostkey:
+                description:
+                    - If C(yes), ensure that "-o StrictHostKeyChecking=no" is
+                      present as an ssh option.
+                type: bool
+                default: 'no'
+            ssh_opts:
+                description:
+                    - Creates a wrapper script and exports the path as GIT_SSH
+                      which git then automatically uses to override ssh arguments.
+                      An example value could be "-o StrictHostKeyChecking=no"
+                      (although this particular option is better set via
+                      C(accept_hostkey)).
+                type: str
+                default: None
+    executable:
+        description:
+            - Path to git executable to use. If not supplied,
+              the normal mechanism for resolving binary paths will be used.
+        version_added: "1.4"
     remote:
         description:
             - Local system alias for git remote PUSH and PULL repository operations.
@@ -114,6 +143,20 @@ options:
     url: "git@gitlab.com:networkAutomation/git_test_module.git"
     user_name: lvrfrc87
     user_email: lvrfrc87@gmail.com
+
+- name: SSH with private key | add file1.
+  git_acp:
+    path: /Users/git/git_acp
+    branch: master
+    comment: Add file1.
+    add: [ file1  ]
+    remote: dev_test
+    mode: ssh
+    url: "git@gitlab.com:networkAutomation/git_test_module.git"
+    ssh_params:
+      accept_newhostkey: true
+      key_file: '{{ lookup('env', 'HOME') }}/.ssh/id_rsa'
+      ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
 
 - name: LOCAL | push on local repo.
   git_acp:
