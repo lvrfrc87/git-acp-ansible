@@ -144,6 +144,20 @@ options:
     user_name: lvrfrc87
     user_email: lvrfrc87@gmail.com
 
+- name: SSH with private key | add file1.
+  git_acp:
+    path: /Users/git/git_acp
+    branch: master
+    comment: Add file1.
+    add: [ file1  ]
+    remote: dev_test
+    mode: ssh
+    url: "git@gitlab.com:networkAutomation/git_test_module.git"
+    ssh_params:
+      accept_newhostkey: true
+      key_file: '{{ lookup('env', 'HOME') }}/.ssh/id_rsa'
+      ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
+
 - name: LOCAL | push on local repo.
   git_acp:
     path: "~/test_directory/repo"
