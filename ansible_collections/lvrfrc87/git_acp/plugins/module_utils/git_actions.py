@@ -18,6 +18,10 @@ class Git:
         self.path = self.module.params['path']
         self.git_path = self.module.params['executable'] or self.module.get_bin_path('git', True)
 
+        self.ssh_key_file = None
+        self.ssh_opts = None
+        self.ssh_accept_hostkey = False
+
         ssh_params = self.module.params['ssh_params'] or None
 
         if ssh_params:
