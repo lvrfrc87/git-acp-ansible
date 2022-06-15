@@ -88,6 +88,7 @@ options:
                       C(accept_hostkey)).
                 type: str
                 default: None
+        version_added: "1.4.0"
     executable:
         description:
             - Path to git executable to use. If not supplied,
@@ -208,9 +209,10 @@ def main():
     mode = module.params.get('mode')
     user_name = module.params.get('user_name')
     user_email = module.params.get('user_email')
+    ssh_params = module.params.get('ssh_params')
 
-    # We screenscrape a huge amount of git commands so use C locale anytime we
-    # call run_command()
+    # We screenscrape a huge amount of git commands so use C
+    # locale anytime we call run_command()
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
     if mode == 'local':
@@ -220,9 +222,14 @@ def main():
         if push_option:
             module.fail_json(msg='"--push-option" not supported with mode "local"')
 
+        if ssh_params:
+            module.warn(msg='SSH Parameters will be ignored as mode "local"')
+
     elif mode == 'https':
         if not url.startswith('https://'):
             module.fail_json(msg='HTTPS mode selected but url (' + url + ') not starting with "https"')
+        if ssh_params:
+            module.warn(msg='SSH Parameters will be ignored as mode "https"')
 
     elif mode == 'ssh':
         if not url.startswith(('git', 'ssh://git')):
