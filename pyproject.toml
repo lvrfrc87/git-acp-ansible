@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "git-acp-ansible"
+version = "1.4.0"
+description = "Git Add/Commit/Push Ansible module."
+authors = ["Federico Olivieri <lvrfrc87@gmail.com"]
+license = "GPL-3.0-only"
+readme = "README.md"
+homepage = "https://github.com/lvrfrc87/git-acp-ansible"
+repository = "https://github.com/lvrfrc87/git-acp-ansible"
+keywords = ["ansible", "git", "automation", "devops"]
+include = [
+    "LICENSE",
+    "README.md",
+]
+
+[tool.poetry.dependencies]
+ansible = "^2.10"
+python = "^3.7"
+
+[tool.poetry.dev-dependencies]
+ansible-lint = "*"

@@ -69,8 +69,7 @@ options:
         description:
             - Dictionary containing SSH parameters.
         type: dict
-        default: None
-        options:
+        suboptions:
             key_file:
                 description:
                     - Specify an optional private key file path, on the target host, to use for the checkout.
@@ -89,11 +88,13 @@ options:
                       C(accept_hostkey)).
                 type: str
                 default: None
+        version_added: "1.4.0"
     executable:
         description:
             - Path to git executable to use. If not supplied,
               the normal mechanism for resolving binary paths will be used.
-        version_added: "1.4"
+        type: path
+        version_added: "1.4.0"
     remote:
         description:
             - Local system alias for git remote PUSH and PULL repository operations.
@@ -161,6 +162,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.git_actions import Git
 from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.git_configuration import GitConfiguration
 
+
 def main():
     """
     Code entrypoint.
@@ -207,9 +209,10 @@ def main():
     mode = module.params.get('mode')
     user_name = module.params.get('user_name')
     user_email = module.params.get('user_email')
+    ssh_params = module.params.get('ssh_params')
 
-    # We screenscrape a huge amount of git commands so use C locale anytime we
-    # call run_command()
+    # We screenscrape a huge amount of git commands so use C
+    # locale anytime we call run_command()
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
     if mode == 'local':
@@ -219,9 +222,14 @@ def main():
         if push_option:
             module.fail_json(msg='"--push-option" not supported with mode "local"')
 
+        if ssh_params:
+            module.warn(msg='SSH Parameters will be ignored as mode "local"')
+
     elif mode == 'https':
         if not url.startswith('https://'):
             module.fail_json(msg='HTTPS mode selected but url (' + url + ') not starting with "https"')
+        if ssh_params:
+            module.warn('SSH Parameters will be ignored as mode "https"')
 
     elif mode == 'ssh':
         if not url.startswith(('git', 'ssh://git')):

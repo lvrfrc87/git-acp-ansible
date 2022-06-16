@@ -18,12 +18,17 @@ class Git:
         self.path = self.module.params['path']
         self.git_path = self.module.params['executable'] or self.module.get_bin_path('git', True)
 
-        ssh_params = self.module.params['ssh_params']
+        self.ssh_key_file = None
+        self.ssh_opts = None
+        self.ssh_accept_hostkey = False
+
+        ssh_params = self.module.params['ssh_params'] or None
 
         if ssh_params:
-            self.ssh_key_file = ssh_params['key_file']
-            self.ssh_opts = ssh_params['ssh_opts']
-            self.ssh_accept_hostkey = ssh_params['accept_hostkey']
+
+            self.ssh_key_file = ssh_params['key_file'] if 'key_file' in ssh_params else None
+            self.ssh_opts = ssh_params['ssh_opts'] if 'ssh_opts' in ssh_params else None
+            self.ssh_accept_hostkey = ssh_params['accept_hostkey'] if 'accept_hostkey' in ssh_params else False
 
             if self.ssh_accept_hostkey:
                 if self.ssh_opts is not None:
@@ -36,7 +41,7 @@ class Git:
         self.set_git_ssh(self.ssh_wrapper, self.ssh_key_file, self.ssh_opts)
         module.add_cleanup_file(path=self.ssh_wrapper)
 
-    ## ref: https://github.com/ansible/ansible/blob/05b90ab69a3b023aa44b812c636bb2c48e30108e/lib/ansible/modules/git.py#L368
+    # ref: https://github.com/ansible/ansible/blob/05b90ab69a3b023aa44b812c636bb2c48e30108e/lib/ansible/modules/git.py#L368
     def write_ssh_wrapper(self, module_tmpdir):
         try:
             # make sure we have full permission to the module_dir, which
@@ -71,7 +76,7 @@ fi
         os.chmod(wrapper_path, st.st_mode | stat.S_IEXEC)
         return wrapper_path
 
-    ## ref: https://github.com/ansible/ansible/blob/05b90ab69a3b023aa44b812c636bb2c48e30108e/lib/ansible/modules/git.py#L402
+    # ref: https://github.com/ansible/ansible/blob/05b90ab69a3b023aa44b812c636bb2c48e30108e/lib/ansible/modules/git.py#L402
     def set_git_ssh(self, ssh_wrapper, key_file, ssh_opts):
 
         if os.environ.get("GIT_SSH"):
