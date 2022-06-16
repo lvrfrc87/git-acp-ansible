@@ -229,7 +229,7 @@ def main():
         if not url.startswith('https://'):
             module.fail_json(msg='HTTPS mode selected but url (' + url + ') not starting with "https"')
         if ssh_params:
-            module.warn(msg='SSH Parameters will be ignored as mode "https"')
+            module.warn('SSH Parameters will be ignored as mode "https"')
 
     elif mode == 'ssh':
         if not url.startswith(('git', 'ssh://git')):

@@ -177,8 +177,8 @@
   register: remote
 - debug: var=remote
 
-##############################################
-##
+#############################################
+#
 ## Test using SSH using private key
 ##
 ##############################################
@@ -196,16 +196,16 @@
     cacheable: "{{ setup_remote_tmp_dir_cache_path | bool }}"
 
 
-- name: 10165 - MISSING-HOSTKEY | check accept_newhostkey support
+- name: 10165 - MISSING-HOSTKEY | check accept_hostkey support
   shell: ssh -o StrictHostKeyChecking=accept-new -V
-  register: ssh_supports_accept_newhostkey
+  register: ssh_supports_accept_hostkey
   ignore_errors: true
 
 - name: 10166 - MISSING-HOSTKEY | missing hostkey tests
-  when: ssh_supports_accept_newhostkey.rc != 0
+  when: ssh_supports_accept_hostkey.rc != 0
   block:
 
-    - name: 10167 - MISSING-HOSTKEY | accept_newhostkey when ssh does not support the option
+    - name: 10167 - MISSING-HOSTKEY | accept_hostkey when ssh does not support the option
       git_acp:
         url: "git@gitlab.com:networkAutomation/git_test_module.git"
         path: "{{ working_dir }}"
@@ -213,7 +213,7 @@
         comment: Add .
         mode: ssh
         ssh_params:
-          accept_newhostkey: true
+          accept_hostkey: true
           key_file: '{{ github_ssh_private_key }}'
           ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
       register: git_result
@@ -225,7 +225,7 @@
           - git_result.warnings is search("does not support")
 
 
-- name: 10168 - MISSING-HOSTKEY | push ssh://git@github.com repo without accept_newhostkey (expected fail)
+- name: 10168 - MISSING-HOSTKEY | push ssh://git@github.com repo without accept_hostkey (expected fail)
   git_acp:
     url: "git@gitlab.com:networkAutomation/git_test_module.git"
     path: "{{ working_dir }}"
@@ -242,9 +242,9 @@
       - git_result is failed
 
 - name: 10169 - HOSTKEY TESTS | Validate ssh with private host key
-  when: github_ssh_private_key is defined and ssh_supports_accept_newhostkey.rc == 0
+  when: github_ssh_private_key is defined and ssh_supports_accept_hostkey.rc == 0
   block:
-    - name: 10170 - HOSTKEY TESTS | checkout git@github.com repo with accept_newhostkey (expected pass)
+    - name: 10170 - HOSTKEY TESTS | checkout git@github.com repo with accept_hostkey (expected pass)
       git_acp:
         path: "{{ working_dir }}"
         branch: master
@@ -253,7 +253,7 @@
         mode: ssh
         url: "git@gitlab.com:networkAutomation/git_test_module.git"
         ssh_params:
-          accept_newhostkey: true
+          accept_hostkey: true
           key_file: '{{ github_ssh_private_key }}'
           ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
       register: git_result
@@ -262,7 +262,7 @@
         that:
           - git_result is changed
 
-    - name: 10172 - HOSTKEY TESTS | checkout ssh://git@github.com repo with accept_newhostkey (expected pass)
+    - name: 10172 - HOSTKEY TESTS | checkout ssh://git@github.com repo with accept_hostkey (expected pass)
       git_acp:
         path: "{{ working_dir }}"
         branch: master
@@ -271,7 +271,7 @@
         mode: ssh
         url: "git@gitlab.com:networkAutomation/git_test_module.git"
         ssh_params:
-          accept_newhostkey: false # should already have been accepted
+          accept_hostkey: false # should already have been accepted
           key_file: '{{ github_ssh_private_key }}'
           ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
       register: git_result
@@ -311,8 +311,7 @@
     url: "https://gitlab.com/networkAutomation/git_test_module.git"
   ignore_errors: yes
 - debug: var=result
-- assert: { that: not result.changed }
-- meta: end_play
+- assert: { that: "'SSH Parameters will be ignored' in result.warnings[0]" }
 
 
 - name: 10080 - HTTPS | fail because ssh URL.

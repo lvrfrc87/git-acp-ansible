@@ -177,8 +177,8 @@
   register: remote
 - debug: var=remote
 
-##############################################
-##
+#############################################
+#
 ## Test using SSH using private key
 ##
 ##############################################
@@ -311,8 +311,7 @@
     url: "https://gitlab.com/networkAutomation/git_test_module.git"
   ignore_errors: yes
 - debug: var=result
-- assert: { that: not result.changed }
-- meta: end_play
+- assert: { that: "'SSH Parameters will be ignored' in result.warnings[0]" }
 
 
 - name: 10080 - HTTPS | fail because ssh URL.
