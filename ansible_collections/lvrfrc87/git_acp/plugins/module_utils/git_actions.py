@@ -18,12 +18,17 @@ class Git:
         self.path = self.module.params['path']
         self.git_path = self.module.params['executable'] or self.module.get_bin_path('git', True)
 
-        ssh_params = self.module.params['ssh_params']
+        self.ssh_key_file = None
+        self.ssh_opts = None
+        self.ssh_accept_hostkey = False
+
+        ssh_params = self.module.params['ssh_params'] or None
 
         if ssh_params:
-            self.ssh_key_file = ssh_params['key_file']
-            self.ssh_opts = ssh_params['ssh_opts']
-            self.ssh_accept_hostkey = ssh_params['accept_hostkey']
+
+            self.ssh_key_file = ssh_params['key_file'] if 'key_file' in ssh_params else None
+            self.ssh_opts = ssh_params['ssh_opts'] if 'ssh_opts' in ssh_params else None
+            self.ssh_accept_hostkey = ssh_params['accept_hostkey'] if 'accept_hostkey' in ssh_params else False
 
             if self.ssh_accept_hostkey:
                 if self.ssh_opts is not None:
