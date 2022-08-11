@@ -175,7 +175,7 @@ fi
 
     def push(self):
         """
-        Set URL and remote if required. Push changes to remote repo.
+        Set URL and remote if required, and reset URL if required. Push changes to remote repo.
 
         args:
             * module:
@@ -212,6 +212,34 @@ fi
             rc, _output, _error = self.module.run_command(command, cwd=self.path)
 
             if rc == 0:
+                if mode == "https":
+                    if "@" not in _output:
+                        self.original_url = _output[:-1]
+
+                        command = [
+                            self.git_path,
+                            'remote',
+                            'set-url',
+                            '--add',
+                            origin,
+                            'https://{0}:{1}@{2}'.format(user, token, url[8:])
+                        ]
+                        rc, _output, _error = self.module.run_command(command, cwd=self.path)
+
+                        if rc != 0:
+                            return FailingMessage(self.module, rc, command, _output, _error)
+                        command = [
+                            self.git_path,
+                            'remote',
+                            'set-url',
+                            '--delete',
+                            origin,
+                            self.original_url
+                        ]
+                        rc, _output, _error = self.module.run_command(command, cwd=self.path)
+
+                        if rc != 0:
+                            return FailingMessage(self.module, rc, command, _output, _error)
                 return
 
             if rc == 128:
@@ -262,9 +290,48 @@ fi
             else:
                 FailingMessage(self.module, rc, command, output, error)
 
+        def reset_url():
+            """
+            Reset URL and if required.
+
+            args:
+                * module:
+                    type: dict()
+                    descrition: Ansible basic module utilities and module arguments.
+            return: null
+            """
+            command = [
+                self.git_path,
+                'remote',
+                'set-url',
+                '--add',
+                origin,
+                self.original_url
+            ]
+            rc, _output, _error = self.module.run_command(command, cwd=self.path)
+
+            if rc != 0:
+                return FailingMessage(self.module, rc, command, _output, _error)
+
+            command = [
+                self.git_path,
+                'remote',
+                'set-url',
+                '--delete',
+                origin,
+                'https://{0}:{1}@{2}'.format(user, token, url[8:])
+            ]
+            rc, _output, _error = self.module.run_command(command, cwd=self.path)
+
+            if rc != 0:
+                return FailingMessage(self.module, rc, command, _output, _error)
+            return
+
         if push_option:
             command.insert(3, '--push-option={0} '.format(push_option))
 
         set_url()
+        push_command = push_cmd()
+        reset_url()
+        return push_command
 
-        return push_cmd()
