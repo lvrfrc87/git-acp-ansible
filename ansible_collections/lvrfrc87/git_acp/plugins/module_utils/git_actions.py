@@ -188,14 +188,13 @@ fi
         """
         url = self.module.params['url']
         mode = self.module.params['mode']
-        origin = self.module.params['remote']
         branch = self.module.params['branch']
-        origin = self.module.params['remote']
+        remote = self.module.params['remote']
         push_option = self.module.params.get('push_option')
         user = self.module.params.get('user')
         token = self.module.params.get('token')
 
-        command = [self.git_path, 'push', origin, branch]
+        command = [self.git_path, 'push', remote, branch]
 
         def set_url():
             """
@@ -207,12 +206,9 @@ fi
                     descrition: Ansible basic module utilities and module arguments.
             return: null
             """
-            command = [self.git_path, 'remote', 'get-url', '--all', origin]
+            command = [self.git_path, 'remote', 'get-url', '--all', remote]
 
-            rc, _output, _error = self.module.run_command(command, cwd=self.path)
-
-            if rc == 0:
-                return
+            rc, output, _error = self.module.run_command(command, cwd=self.path)
 
             if rc == 128:
                 if mode == 'https':
@@ -221,13 +217,13 @@ fi
                             self.git_path,
                             'remote',
                             'add',
-                            origin,
+                            remote,
                             'https://{0}:{1}@{2}'.format(user, token, url[8:])
                         ]
                     else:
                         self.module.fail_json(msg='HTTPS mode selected but not HTTPS URL provided')
                 else:
-                    command = [self.git_path, 'remote', 'add', origin, url]
+                    command = [self.git_path, 'remote', 'add', remote, url]
 
                 rc, output, error = self.module.run_command(command, cwd=self.path)
 
@@ -235,6 +231,35 @@ fi
                     return
                 else:
                     FailingMessage(self.module, rc, command, output, error)
+            
+            elif rc == 0 and output != url:
+                rc, output, error = self.module.run_command(['git', 'remote', 'remove', remote], cwd=self.path)
+                
+                if rc == 0:
+                    if mode == 'https':
+                        if url.startswith('https://'):
+                            command = [
+                                    self.git_path,
+                                    'remote',
+                                    'add',
+                                    remote,
+                                    'https://{0}:{1}@{2}'.format(user, token, url[8:])
+                                ]
+                        else:
+                            self.module.fail_json(msg='HTTPS mode selected but not HTTPS URL provided')
+                    else:
+                        command = [self.git_path, 'remote', 'add', remote, url]
+
+                    rc, output, error = self.module.run_command(command, cwd=self.path)
+                    if rc == 0:
+                        return
+                    else:
+                        FailingMessage(self.module, rc, command, output, error)
+                else:
+                    FailingMessage(self.module, rc, command, output, error)
+           
+            elif rc == 0:
+                return
 
         def push_cmd():
             """

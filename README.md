@@ -1,6 +1,6 @@
 # git-acp-ansible
 
-`git_acp` is an Ansible module for `git add`, `git commit`, `git push` and `git config` operations on local or remote (https/ssh) git repo.
+`git_acp` is an Ansible module for `git add`, `git commit`, `git push` and `git config` operations on local or remote (https/ssh) git repo. The module interact with the local shell execution environment so certain commands - such as set new git URL - will edit local `.git/confi`
 
 ### PyPi Install:
 
