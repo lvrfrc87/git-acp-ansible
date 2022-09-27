@@ -228,9 +228,8 @@ fi
                 rc, output, error = self.module.run_command(command, cwd=self.path)
 
                 if rc == 0:
-                    return
-                else:
-                    FailingMessage(self.module, rc, command, output, error)
+                    return    
+                FailingMessage(self.module, rc, command, output, error)
             
             elif rc == 0 and output != url:
                 rc, output, error = self.module.run_command(['git', 'remote', 'remove', remote], cwd=self.path)
@@ -253,8 +252,7 @@ fi
                     rc, output, error = self.module.run_command(command, cwd=self.path)
                     if rc == 0:
                         return
-                    else:
-                        FailingMessage(self.module, rc, command, output, error)
+                    FailingMessage(self.module, rc, command, output, error)
                 else:
                     FailingMessage(self.module, rc, command, output, error)
            
