@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
 class GitConfiguration:
-
     def __init__(self, module):
         self.module = module
 
@@ -20,15 +20,15 @@ class GitConfiguration:
                 type: dict()
                 desription: updated changed status.
         """
-        PARAMETERS = ['name', 'email']
+        PARAMETERS = ["name", "email"]
         result = dict()
-        path = self.module.params.get('path')
+        path = self.module.params.get("path")
 
         for parameter in PARAMETERS:
-            config_parameter = self.module.params.get('user_{0}'.format(parameter))
+            config_parameter = self.module.params.get("user_{0}".format(parameter))
 
             if config_parameter:
-                command = ['git', 'config', '--local', 'user.{0}'.format(parameter)]
+                command = ["git", "config", "--local", "user.{0}".format(parameter)]
                 _rc, output, _error = self.module.run_command(command, cwd=path)
 
                 if output != config_parameter:

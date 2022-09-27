@@ -1,8 +1,9 @@
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-class ModuleFailure():
+class ModuleFailure:
     def __init__(self, module, rc, command, output, error):
         """
         Failing message function for rc codes != 0.
@@ -28,8 +29,10 @@ class ModuleFailure():
         """
         module.fail_json(
             rc=rc,
-            msg="Error in running '{command}' command".format(command=' '.join(command)),
-            command=' '.join(command),
+            msg="Error in running '{command}' command".format(
+                command=" ".join(command)
+            ),
+            command=" ".join(command),
             stdout=output,
             stderr=error,
         )

@@ -1,3 +1,10 @@
+# Ver. 1.4.1
+
+- Remove duplicated variable.
+- Rename "origin" variable into "remote".
+- Improve conditional logic for URL set.
+- Update README.md
+
 # Ver. 1.4.0
 
 - Add SSH parameters support.

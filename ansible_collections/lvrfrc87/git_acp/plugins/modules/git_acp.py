@@ -6,10 +6,11 @@
 
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: git_acp
 author:
@@ -111,9 +112,9 @@ options:
 
 requirements:
     - git>=2.10.0 (the command line tool)
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 - name: HTTPS | add file1.
   git_acp:
     user: Federico87
@@ -146,9 +147,9 @@ EXAMPLES = '''
     add: [ file1 ]
     mode: local
     url: /Users/federicoolivieri/test_directory/repo.git
-'''
+"""
 
-RETURN = '''
+RETURN = """
 output:
     description: list of git cli command stdout
     type: list
@@ -156,11 +157,13 @@ output:
     sample: [
         "[master 99830f4] Remove [ test.txt, tax.txt ]\n 4 files changed, 26 insertions(+)..."
     ]
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.git_actions import Git
-from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.git_configuration import GitConfiguration
+from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.git_configuration import (
+    GitConfiguration,
+)
 
 
 def main():
@@ -174,28 +177,28 @@ def main():
             desription: returned output from git commands and updated changed status.
     """
     argument_spec = dict(
-        path=dict(required=True, type='path'),
-        executable=dict(default=None, type='path'),
+        path=dict(required=True, type="path"),
+        executable=dict(default=None, type="path"),
         comment=dict(required=True),
-        add=dict(type='list', elements='str', default=['.']),
+        add=dict(type="list", elements="str", default=["."]),
         user=dict(),
         token=dict(no_log=True),
-        ssh_params=dict(default=None, type='dict', required=False),
-        branch=dict(default='main'),
-        push_option=dict(default=None, type='str'),
-        mode=dict(choices=['ssh', 'https', 'local'], default='ssh'),
+        ssh_params=dict(default=None, type="dict", required=False),
+        branch=dict(default="main"),
+        push_option=dict(default=None, type="str"),
+        mode=dict(choices=["ssh", "https", "local"], default="ssh"),
         url=dict(required=True),
-        remote=dict(default='origin'),
+        remote=dict(default="origin"),
         user_name=dict(),
-        user_email=dict()
+        user_email=dict(),
     )
 
     required_if = [
-        ('mode', 'https', ['user', 'token']),
+        ("mode", "https", ["user", "token"]),
     ]
 
     required_together = [
-        ['user_name', 'user_email'],
+        ["user_name", "user_email"],
     ]
 
     module = AnsibleModule(
@@ -204,19 +207,21 @@ def main():
         required_together=required_together,
     )
 
-    url = module.params.get('url')
-    push_option = module.params.get('push_option')
-    mode = module.params.get('mode')
-    user_name = module.params.get('user_name')
-    user_email = module.params.get('user_email')
-    ssh_params = module.params.get('ssh_params')
+    url = module.params.get("url")
+    push_option = module.params.get("push_option")
+    mode = module.params.get("mode")
+    user_name = module.params.get("user_name")
+    user_email = module.params.get("user_email")
+    ssh_params = module.params.get("ssh_params")
 
     # We screenscrape a huge amount of git commands so use C
     # locale anytime we call run_command()
-    module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
+    module.run_command_environ_update = dict(
+        LANG="C", LC_ALL="C", LC_MESSAGES="C", LC_CTYPE="C"
+    )
 
-    if mode == 'local':
-        if url.startswith(('https://', 'git', 'ssh://git')):
+    if mode == "local":
+        if url.startswith(("https://", "git", "ssh://git")):
             module.fail_json(msg='SSH or HTTPS mode selected but repo is "local')
 
         if push_option:
@@ -225,20 +230,28 @@ def main():
         if ssh_params:
             module.warn(msg='SSH Parameters will be ignored as mode "local"')
 
-    elif mode == 'https':
-        if not url.startswith('https://'):
-            module.fail_json(msg='HTTPS mode selected but url (' + url + ') not starting with "https"')
+    elif mode == "https":
+        if not url.startswith("https://"):
+            module.fail_json(
+                msg="HTTPS mode selected but url ("
+                + url
+                + ') not starting with "https"'
+            )
         if ssh_params:
             module.warn('SSH Parameters will be ignored as mode "https"')
 
-    elif mode == 'ssh':
-        if not url.startswith(('git', 'ssh://git')):
+    elif mode == "ssh":
+        if not url.startswith(("git", "ssh://git")):
             module.fail_json(
-                msg='SSH mode selected but url (' + url + ') not starting with "git" or "ssh://git"'
+                msg="SSH mode selected but url ("
+                + url
+                + ') not starting with "git" or "ssh://git"'
             )
 
-        if url.startswith('ssh://git@github.com'):
-            module.fail_json(msg='GitHub does not support "ssh://" URL. Please remove it from url')
+        if url.startswith("ssh://git@github.com"):
+            module.fail_json(
+                msg='GitHub does not support "ssh://" URL. Please remove it from url'
+            )
 
     result = dict(changed=False)
 
