@@ -246,7 +246,7 @@ fi
                                     'https://{0}:{1}@{2}'.format(user, token, url[8:])
                                 ]
                         else:
-                            self.module.fail_json(msg='HTTPS mode selected but not HTTPS URL provided')
+                            self.module.fail_json(msg='HTTPS mode selected but no HTTPs URL provided')
                     else:
                         command = [self.git_path, 'remote', 'add', remote, url]
 
