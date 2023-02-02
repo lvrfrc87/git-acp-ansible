@@ -217,7 +217,7 @@ def main():
     # We screenscrape a huge amount of git commands so use C
     # locale anytime we call run_command()
     module.run_command_environ_update = dict(
-        LANG="C", LC_ALL="C", LC_MESSAGES="C", LC_CTYPE="C"
+        LANG="C.UTF-8", LC_ALL="C.UTF-8", LC_MESSAGES="C.UTF-8", LC_CTYPE="C.UTF-8"
     )
 
     if mode == "local":
