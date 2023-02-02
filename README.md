@@ -20,7 +20,7 @@ myproject/
 
 ### Ansible Galaxy Install (for Ansible version > 2.9)
 
-All info related to Ansible Galax install are available [here](ansible_collections/lvrfrc87/git_acp/README.md)
+All info related to Ansible Galaxy install are available [here](ansible_collections/lvrfrc87/git_acp/README.md)
 
 ### Module Documentation:
 
