@@ -185,6 +185,24 @@ fi
         else:
             FailingMessage(self.module, rc, command, output, error)
 
+    def pull(self):
+        """Get git changes from upstream before pushing."""
+        command = [
+            self.git_path,
+            "-C",
+            self.path,
+            "pull",
+            self.module.params["url"],
+            self.module.params["branch"],
+        ] + self.module.params["pull_options"]
+        rc, output, error = self.module.run_command(command)
+        if rc == 0:
+            return {
+                "git_pull": {"stdout": output, "stderr": error},
+                "changed": True,
+            }
+        FailingMessage(self.module, rc, command, output, error)
+
     def push(self):
         """
         Set URL and remote if required. Push changes to remote repo.
