@@ -456,3 +456,67 @@
   ignore_errors: yes
   loop:
     - "{{ file1 }}"
+
+# Test pull before push
+- name: Create a temporary origin directory
+  register: _pull_src
+  tempfile:
+    state: directory
+
+- name: Create a temporary destination directory
+  register: _pull_dest
+  tempfile:
+    state: directory
+
+- name: Init origin directory
+  shell:
+    chdir: "{{ _pull_src }}"
+    cmd: |
+      git init
+      touch a.txt
+      git add -A
+      git checkout -b main
+      git commit -m 'commit 1'
+
+- name: Clone into destination
+  git:
+    repo: "{{ _pull_src }}"
+    dest: "{{ _pull_dest }}"
+
+- name: Evolve src repo
+  shell:
+    chdir: "{{ _pull_src }}"
+    cmd: |
+      touch b.txt
+      git add -A
+      git commit -m 'commit 2'
+
+- name: Add a file to destination repo
+  file:
+    path: "{{ _pull_dest }}/c.txt"
+    state: file
+
+- name: ACP without pull fails
+  register: _acp
+  ignore_errors: true
+  git_acp:
+    add: [ "c.txt" ]
+    branch: main
+    comment: commit 3
+    mode: local
+    path: "{{ _pull_dest }}"
+    url: "{{ _pull_src }}"
+
+- name: Assert last task failed
+  assert:
+    that: _acp is failed
+
+- name: ACP with pull works
+  git_acp:
+    add: [ "c.txt" ]
+    branch: main
+    comment: commit 3
+    mode: local
+    path: "{{ _pull_dest }}"
+    pull: true
+    url: "{{ _pull_src }}"

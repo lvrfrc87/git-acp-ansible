@@ -50,6 +50,17 @@ options:
             - Git branch where perform git push.
         type: str
         default: main
+    pull:
+        description:
+            - Perform a git pull before pushing.
+        type: bool
+        default: False
+    pull_options:
+        description:
+            - Options added to the pull command. See C(git pull --help) for available
+              options.
+        type: list
+        default: ['--no-edit']
     push_option:
         description:
             - Git push options. Same as C(git --push-option=option).
@@ -185,6 +196,8 @@ def main():
         token=dict(no_log=True),
         ssh_params=dict(default=None, type="dict", required=False),
         branch=dict(default="main"),
+        pull=dict(default=False, type="bool"),
+        pull_options=dict(default=["--no-edit"], type="list"),
         push_option=dict(default=None, type="str"),
         mode=dict(choices=["ssh", "https", "local"], default="ssh"),
         url=dict(required=True),
@@ -208,6 +221,7 @@ def main():
     )
 
     url = module.params.get("url")
+    pull = module.params.get("pull")
     push_option = module.params.get("push_option")
     mode = module.params.get("mode")
     user_name = module.params.get("user_name")
@@ -265,6 +279,8 @@ def main():
     if changed_files:
         git.add()
         result.update(git.commit())
+        if pull:
+            result.update(git.pull())
         result.update(git.push())
 
     module.exit_json(**result)
