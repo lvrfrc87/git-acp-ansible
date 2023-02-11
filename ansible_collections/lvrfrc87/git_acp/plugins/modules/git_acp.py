@@ -60,6 +60,7 @@ options:
             - Options added to the pull command. See C(git pull --help) for available
               options.
         type: list
+        elements: str
         default: ['--no-edit']
     push_option:
         description:
@@ -197,7 +198,7 @@ def main():
         ssh_params=dict(default=None, type="dict", required=False),
         branch=dict(default="main"),
         pull=dict(default=False, type="bool"),
-        pull_options=dict(default=["--no-edit"], type="list"),
+        pull_options=dict(default=["--no-edit"], type="list", elements="str"),
         push_option=dict(default=None, type="str"),
         mode=dict(choices=["ssh", "https", "local"], default="ssh"),
         url=dict(required=True),

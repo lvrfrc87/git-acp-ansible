@@ -1,3 +1,10 @@
+# Ver. 1.5.0
+
+- Add `pull` function.
+- Bump cryptography.
+- Fix typo in READme.md.
+- Fix Compatibility with pre-commit ansible-lint.
+
 # Ver. 1.4.1
 
 - Remove duplicated variable.
