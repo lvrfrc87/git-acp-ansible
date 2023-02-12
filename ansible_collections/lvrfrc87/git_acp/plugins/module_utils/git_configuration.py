@@ -7,7 +7,7 @@ class GitConfiguration:
     def __init__(self, module):
         self.module = module
 
-    def user_config(self):
+    def config(self):
         """
         Config git local user.name and user.email.
 
@@ -22,19 +22,17 @@ class GitConfiguration:
         """
         PARAMETERS = ["name", "email"]
         result = dict()
-        path = self.module.params.get("path")
+        path = self.module.params["path"]
 
         for parameter in PARAMETERS:
-            config_parameter = self.module.params.get("user_{0}".format(parameter))
+            config_parameter = self.module.params["git_config"].get(f"user_{parameter}")
+            command = ["git", "config", "--local", f"user.{parameter}"]
+            _rc, output, _error = self.module.run_command(command, cwd=path)
 
-            if config_parameter:
-                command = ["git", "config", "--local", "user.{0}".format(parameter)]
+            if output != config_parameter:
+                command.append(config_parameter)
                 _rc, output, _error = self.module.run_command(command, cwd=path)
 
-                if output != config_parameter:
-                    command.append(config_parameter)
-                    _rc, output, _error = self.module.run_command(command, cwd=path)
-
-                    result.update({parameter: output, "changed": True})
+                result.update({"git_config": {parameter: output, "changed": True}})
 
         return result
