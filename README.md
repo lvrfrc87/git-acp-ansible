@@ -1,6 +1,6 @@
 # git-acp-ansible
 
-`git_acp` is an Ansible module for `git add`, `git commit`, `git push` and `git config` operations on local or remote (https/ssh) git repo. The module will interact with the local shell execution environment, so certain commands such as setting a new git URL will edit the local `.git/config`.
+`git_acp` is an Ansible module for `git add`, `git commit`, `git push`, `git pull` and `git config` operations on local or remote (https/ssh) git repo. The module will interact with the local shell execution environment, so certain commands such as setting a new git URL will edit the local `.git/config`.
 
 ### PyPi Install:
 
@@ -20,13 +20,12 @@ myproject/
 
 ### Ansible Galaxy Install (for Ansible version > 2.9)
 
-All info related to Ansible Galax install are available [here](ansible_collections/lvrfrc87/git_acp/README.md)
+All info related to Ansible Galaxy install are available [here](ansible_collections/lvrfrc87/git_acp/README.md)
 
 ### Module Documentation:
 
 ```
 module: git_acp
-options:
     path:
         description:
             - Folder path where C(.git/) is located.
@@ -55,8 +54,19 @@ options:
     branch:
         description:
             - Git branch where perform git push.
-        required: True
         type: str
+        default: main
+    pull:
+        description:
+            - Perform a git pull before pushing.
+        type: bool
+        default: False
+    pull_options:
+        description:
+            - Options added to the pull command. See C(git pull --help) for available
+              options.
+        type: list
+        default: ['--no-edit']
     push_option:
         description:
             - Git push options. Same as C(git --push-option=option).
@@ -77,8 +87,7 @@ options:
         description:
             - Dictionary containing SSH parameters.
         type: dict
-        default: None
-        options:
+        suboptions:
             key_file:
                 description:
                     - Specify an optional private key file path, on the target host, to use for the checkout.
@@ -97,11 +106,13 @@ options:
                       C(accept_hostkey)).
                 type: str
                 default: None
+        version_added: "1.4.0"
     executable:
         description:
             - Path to git executable to use. If not supplied,
               the normal mechanism for resolving binary paths will be used.
-        version_added: "1.4"
+        type: path
+        version_added: "1.4.0"
     remote:
         description:
             - Local system alias for git remote PUSH and PULL repository operations.
@@ -165,5 +176,15 @@ options:
     comment: Add file1.
     add: [ file1 ]
     mode: local
+    url: /Users/federicoolivieri/test_directory/repo.git
+
+- name: LOCAL | pull before to push.
+  git_acp:
+    add: [ "c.txt" ]
+    branch: main
+    comment: commit 3
+    mode: local
+    path: "~/test_directory/repo"
+    pull: true
     url: /Users/federicoolivieri/test_directory/repo.git
 ```
