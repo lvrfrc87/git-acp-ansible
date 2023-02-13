@@ -23,10 +23,11 @@ class GitConfiguration:
         PARAMETERS = ["name", "email"]
         result = dict()
         path = self.module.params["path"]
+        mode = self.module.params["git_config"]["mode"]
 
         for parameter in PARAMETERS:
             config_parameter = self.module.params["git_config"].get(f"user_{parameter}")
-            command = ["git", "config", "--local", f"user.{parameter}"]
+            command = ["git", "config", f"--{mode}", f"user.{parameter}"]
             _rc, output, _error = self.module.run_command(command, cwd=path)
 
             if output != config_parameter:

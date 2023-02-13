@@ -180,7 +180,7 @@ fi
 
         if rc == 0:
             if output:
-                result.update({"git_commit": output, "changed": True})
+                result.update({"git_commit":{"output": output, "changed": True}})
                 return result
         else:
             FailingMessage(self.module, rc, command, output, error)
