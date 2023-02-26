@@ -15,40 +15,40 @@ from ansible.module_utils.six import b
 class Git:
     def __init__(self, module):
         self.module = module
-
-        self.url = self.module.params["url"]
-        self.path = self.module.params["path"]
-        self.git_path = self.module.params["executable"] or self.module.get_bin_path(
+        self.url = module.params["url"]
+        self.path = module.params["path"]
+        self.git_path = module.params["executable"] or module.get_bin_path(
             "git", True
         )
 
-        self.ssh_key_file = None
-        self.ssh_opts = None
-        self.ssh_accept_hostkey = False
+        ssh_args = {
+            "ssh_key_file": None,
+            "ssh_opts": None,
+            "ssh_accept_hostkey": False,
+            "ssh_params": module.params["ssh_params"] or None
+        }
 
-        ssh_params = self.module.params["ssh_params"] or None
+        if ssh_args["ssh_params"]:
 
-        if ssh_params:
-
-            self.ssh_key_file = (
-                ssh_params["key_file"] if "key_file" in ssh_params else None
+            ssh_args["ssh_key_file"] = (
+                ssh_args["ssh_params"]["key_file"] if "key_file" in ssh_args["ssh_params"] else None
             )
-            self.ssh_opts = ssh_params["ssh_opts"] if "ssh_opts" in ssh_params else None
+            self.ssh_opts = ssh_args["ssh_params"]["ssh_opts"] if "ssh_opts" in ssh_args["ssh_params"] else None
             self.ssh_accept_hostkey = (
-                ssh_params["accept_hostkey"]
-                if "accept_hostkey" in ssh_params
+                ssh_args["ssh_params"]["accept_hostkey"]
+                if "accept_hostkey" in ssh_args["ssh_params"]
                 else False
             )
 
-            if self.ssh_accept_hostkey:
-                if self.ssh_opts is not None:
-                    if "-o StrictHostKeyChecking=no" not in self.ssh_opts:
-                        self.ssh_opts += " -o StrictHostKeyChecking=no"
+            if ssh_args["ssh_accept_hostkey"]:
+                if ssh_args["ssh_opts"] is not None:
+                    if "-o StrictHostKeyChecking=no" not in ssh_args["ssh_opts"]:
+                        ssh_args["ssh_opts"] += " -o StrictHostKeyChecking=no"
                 else:
-                    self.ssh_opts = "-o StrictHostKeyChecking=no"
+                    ssh_args["ssh_opts"] = "-o StrictHostKeyChecking=no"
 
         self.ssh_wrapper = self.write_ssh_wrapper(module.tmpdir)
-        self.set_git_ssh(self.ssh_wrapper, self.ssh_key_file, self.ssh_opts)
+        self.set_git_ssh(self.ssh_wrapper, ssh_args["ssh_key_file"], ssh_args["ssh_opts"])
         module.add_cleanup_file(path=self.ssh_wrapper)
 
     # ref: https://github.com/ansible/ansible/blob/05b90ab69a3b023aa44b812c636bb2c48e30108e/lib/ansible/modules/git.py#L368
@@ -180,7 +180,7 @@ fi
 
         if rc == 0:
             if output:
-                result.update({"git_commit":{"output": output, "changed": True}})
+                result.update({"git_commit": {"output": output, "error": error, "changed": True}})
                 return result
         else:
             FailingMessage(self.module, rc, command, output, error)
@@ -198,132 +198,40 @@ fi
         rc, output, error = self.module.run_command(command)
         if rc == 0:
             return {
-                "git_pull": {"stdout": output, "stderr": error},
-                "changed": True,
+                "git_pull": {"output": output, "error": error, "changed": True}
             }
         FailingMessage(self.module, rc, command, output, error)
 
     def push(self):
         """
-        Set URL and remote if required. Push changes to remote repo.
+        Push changes to remote repo.
 
         args:
-            * module:
-                type: dict()
-                descrition: Ansible basic module utilities and module arguments.
+            * path:
+                type: path
+                descrition: git repo local path.
+            * cmd_push:
+                type: list()
+                descrition: list of commands to perform git push operation.
         return:
             * result:
                 type: dict()
                 desription: returned output from git push command and updated changed status.
         """
         url = self.module.params["url"]
-        mode = self.module.params["mode"]
         branch = self.module.params["branch"]
-        remote = self.module.params["remote"]
         push_option = self.module.params.get("push_option")
-        user = self.module.params.get("user")
-        token = self.module.params.get("token")
-
-        command = [self.git_path, "push", remote, branch]
-
-        def set_url():
-            """
-            Set URL and remote if required.
-
-            args:
-                * module:
-                    type: dict()
-                    descrition: Ansible basic module utilities and module arguments.
-            return: null
-            """
-            command = [self.git_path, "remote", "get-url", "--all", remote]
-
-            rc, output, _error = self.module.run_command(command, cwd=self.path)
-
-            if rc == 128:
-                if mode == "https":
-                    if url.startswith("https://"):
-                        command = [
-                            self.git_path,
-                            "remote",
-                            "add",
-                            remote,
-                            "https://{0}:{1}@{2}".format(user, token, url[8:]),
-                        ]
-                    else:
-                        self.module.fail_json(
-                            msg="HTTPS mode selected but not HTTPS URL provided"
-                        )
-                else:
-                    command = [self.git_path, "remote", "add", remote, url]
-
-                rc, output, error = self.module.run_command(command, cwd=self.path)
-
-                if rc == 0:
-                    return
-                FailingMessage(self.module, rc, command, output, error)
-
-            elif rc == 0 and output != url:
-                rc, output, error = self.module.run_command(
-                    ["git", "remote", "remove", remote], cwd=self.path
-                )
-
-                if rc == 0:
-                    if mode == "https":
-                        if url.startswith("https://"):
-                            command = [
-                                self.git_path,
-                                "remote",
-                                "add",
-                                remote,
-                                "https://{0}:{1}@{2}".format(user, token, url[8:]),
-                            ]
-                        else:
-                            self.module.fail_json(
-                                msg="HTTPS mode selected but no HTTPs URL provided"
-                            )
-                    else:
-                        command = [self.git_path, "remote", "add", remote, url]
-
-                    rc, output, error = self.module.run_command(command, cwd=self.path)
-                    if rc == 0:
-                        return
-                    FailingMessage(self.module, rc, command, output, error)
-                else:
-                    FailingMessage(self.module, rc, command, output, error)
-
-            elif rc == 0:
-                return
-
-        def push_cmd():
-            """
-            Set URL and remote if required. Push changes to remote repo.
-
-            args:
-                * path:
-                    type: path
-                    descrition: git repo local path.
-                * cmd_push:
-                    type: list()
-                    descrition: list of commands to perform git push operation.
-            return:
-                * result:
-                    type: dict()
-                    desription: returned output from git push command and updated changed status.
-            """
-            result = dict()
-
-            rc, output, error = self.module.run_command(command, cwd=self.path)
-
-            if rc == 0:
-                result.update({"git_push": str(error) + str(output), "changed": True})
-                return result
-            else:
-                FailingMessage(self.module, rc, command, output, error)
+        command = [self.git_path, "push", url, branch]
 
         if push_option:
             command.insert(3, "--push-option={0} ".format(push_option))
 
-        set_url()
+        result = dict()
 
-        return push_cmd()
+        rc, output, error = self.module.run_command(command, cwd=self.path)
+
+        if rc == 0:
+            result.update({"git_push": {"output": str(output), "error": str(error), "changed": True}})
+            return result
+        else:
+            FailingMessage(self.module, rc, command, output, error)

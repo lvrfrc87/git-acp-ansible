@@ -37,10 +37,6 @@ options:
         type: list
         elements: str
         default: ["."]
-    user:
-        description:
-            - Git username for https operations.
-        type: str
     branch:
         description:
             - Git branch where perform git push.
@@ -97,24 +93,6 @@ options:
               the normal mechanism for resolving binary paths will be used.
         type: path
         version_added: "1.4.0"
-    git_config:
-        description:
-            - Dictionary containing git configuration parameters.
-        type: dict
-        suboptions:
-            user_name:
-                description:
-                    - Explicit git local user name. Nice to have for remote operations.
-                type: str
-            user_email:
-                description:
-                    - Explicit git local email address. Nice to have for remote operations.
-                type: str
-            mode:
-                description:
-                    - Git configutation file scope. Can be "local", "global" or "system". See C(git config --help). Default is "local"
-                type: str
-
 requirements:
     - git>=2.10.0 (the command line tool)
 """
@@ -134,10 +112,6 @@ EXAMPLES = """
     comment: Add file2.
     add: [ "file2" ]
     url: "git@gitlab.com:networkAutomation/git_test_module.git dev_test"
-    git_config:
-        user_name: lvrfrc87
-        user_email: lvrfrc87@gmail.com
-        mode: local
 
 - name: LOCAL | push on local repo.
   git_acp:
@@ -171,9 +145,6 @@ output:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.git_actions import Git
-from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.git_configuration import (
-    GitConfiguration,
-)
 
 
 def main():
@@ -197,7 +168,6 @@ def main():
         pull_options=dict(default=["--no-edit"], type="list", elements="str"),
         push_option=dict(default=None, type="str"),
         url=dict(required=True, no_log=True),
-        git_config=dict(default=None, type="dict", required=False),
     )
 
     module = AnsibleModule(
@@ -206,8 +176,6 @@ def main():
 
     url = module.params.get("url")
     pull = module.params.get("pull")
-    push_option = module.params.get("push_option")
-    git_config = module.params.get("git_config")
     ssh_params = module.params.get("ssh_params")
 
     module.run_command_environ_update = dict(
@@ -225,29 +193,6 @@ def main():
                 msg='GitHub does not support "ssh://" URL. Please remove it from url'
             )
 
-    if git_config:
-        git_config_mode = git_config.get("mode")
-        if git_config_mode:
-            if git_config_mode.lower() not in ("local", "global", "system"):
-                module.warn(
-                    msg='Git configutation file scope can be "local", "global" or "system". Revert to default "local".'
-                )
-                git_config["mode"] = "local"
-        else:
-            git_config["mode"] = "local"
-
-        for key in git_config.keys():
-            if key not in ("user_name", "user_email", "mode"):
-                module.fail_json(
-                    msg='git_config dictionary supports only "user_name", "user_email" and "mode" key/value pairs.'
-                )
-        if git_config.get("user_name") and git_config.get("user_email"):
-            result.update(GitConfiguration(module).config())
-        else:
-            module.fail_json(
-                msg='git_config dictionary requires "user_name" and "user_email" key/value pairs.'
-            )
-    
     git = Git(module)
     changed_files = git.status()
 
@@ -257,6 +202,7 @@ def main():
         if pull:
             result.update(git.pull())
         result.update(git.push())
+        result["changed"] = True
 
     module.exit_json(**result)
 
