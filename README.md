@@ -1,6 +1,6 @@
 # git-acp-ansible
 
-`git_acp` is an Ansible module for `git add`, `git commit`, `git push`, `git pull` and `git config` operations on local or remote (https/ssh) git repo. The module will interact with the local shell execution environment, so certain commands such as setting a new git URL will edit the local `.git/config`.
+`git_acp` is an Ansible module for `git add`, `git commit`, `git push` and `git pull` operations on local or remote (https/ssh) git repo. The module will interact with the local shell execution environment, so certain commands such as setting a new git URL will edit the local `.git/config`.
 
 ### PyPi Install:
 
@@ -29,8 +29,8 @@ module: git_acp
     path:
         description:
             - Folder path where C(.git/) is located.
-        required: true
         type: path
+        required: true
     comment:
         description:
             - Git commit comment. Same as C(git commit -m).
@@ -43,14 +43,6 @@ module: git_acp
         type: list
         elements: str
         default: ["."]
-    user:
-        description:
-            - Git username for https operations.
-        type: str
-    token:
-        description:
-            - Git API token for https operations.
-        type: str
     branch:
         description:
             - Git branch where perform git push.
@@ -61,22 +53,18 @@ module: git_acp
             - Perform a git pull before pushing.
         type: bool
         default: False
+        version_added: "1.5.0"
     pull_options:
         description:
             - Options added to the pull command. See C(git pull --help) for available
               options.
         type: list
+        elements: str
         default: ['--no-edit']
+        version_added: "1.5.0"
     push_option:
         description:
             - Git push options. Same as C(git --push-option=option).
-        type: str
-    mode:
-        description:
-            - Git operations are performend eithr over ssh, https or local.
-              Same as C(git@git...) or C(https://user:token@git...).
-        choices: ['ssh', 'https', 'local']
-        default: ssh
         type: str
     url:
         description:
@@ -96,7 +84,7 @@ module: git_acp
                     - If C(yes), ensure that "-o StrictHostKeyChecking=no" is
                       present as an ssh option.
                 type: bool
-                default: 'no'
+                default: False
             ssh_opts:
                 description:
                     - Creates a wrapper script and exports the path as GIT_SSH
@@ -113,19 +101,6 @@ module: git_acp
               the normal mechanism for resolving binary paths will be used.
         type: path
         version_added: "1.4.0"
-    remote:
-        description:
-            - Local system alias for git remote PUSH and PULL repository operations.
-        type: str
-        default: origin
-    user_name:
-        description:
-            - Explicit git local user name. Nice to have for remote operations.
-        type: str
-    user_email:
-        description:
-            - Explicit git local email address. Nice to have for remote operations.
-        type: str
 ```
 
 ### Examples:
@@ -133,58 +108,35 @@ module: git_acp
 ```
 - name: HTTPS | add file1.
   git_acp:
-    user: Federico87
-    token: mytoken
-    path: /Users/git/git_acp
-    branch: master
-    comment: Add file1.
-    remote: origin
+    path: "/Users/git/git_acp"
+    comment: "Add file1."
     add: [ "." ]
-    mode: https
-    url: "https://gitlab.com/networkAutomation/git_test_module.git"
+    url: "https://Federico87:mytoken@gitlab.com/networkAutomation/git_test_module.git"
 
-- name: SSH | add file1.
+- name: SSH | add file2.
   git_acp:
-    path: /Users/git/git_acp
-    branch: master
-    comment: Add file1.
-    add: [ file1  ]
-    remote: dev_test
-    mode: ssh
-    url: "git@gitlab.com:networkAutomation/git_test_module.git"
-    user_name: lvrfrc87
-    user_email: lvrfrc87@gmail.com
-
-- name: SSH with private key | add file1.
-  git_acp:
-    path: /Users/git/git_acp
-    branch: master
-    comment: Add file1.
-    add: [ file1  ]
-    remote: dev_test
-    mode: ssh
-    url: "git@gitlab.com:networkAutomation/git_test_module.git"
-    ssh_params:
-      accept_newhostkey: true
-      key_file: '{{ lookup('env', 'HOME') }}/.ssh/id_rsa'
-      ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
+    path: "/Users/git/git_acp"
+    branch: development
+    comment: Add file2.
+    add: [ "file2" ]
+    url: "git@gitlab.com:networkAutomation/git_test_module.git dev_test"
 
 - name: LOCAL | push on local repo.
   git_acp:
     path: "~/test_directory/repo"
-    branch: master
-    comment: Add file1.
-    add: [ file1 ]
-    mode: local
+    comment: Add file3.
+    add: [ "file3" ]
     url: /Users/federicoolivieri/test_directory/repo.git
 
-- name: LOCAL | pull before to push.
+- name: SSH | pull before to push.
   git_acp:
     add: [ "c.txt" ]
-    branch: main
-    comment: commit 3
-    mode: local
+    comment: "commit 3"
     path: "~/test_directory/repo"
     pull: true
-    url: /Users/federicoolivieri/test_directory/repo.git
+    url: "git@gitlab.com:networkAutomation/git_test_module.git automation"
+    ssh_params:
+        accept_hostkey: true
+        key_file: "{{ github_ssh_private_key }}"
+        ssh_opts: "-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts"
 ```

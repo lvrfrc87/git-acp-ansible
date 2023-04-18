@@ -1,8 +1,16 @@
+# Ver. 2.0.0
+
+- Remove git config argument (the practice of setting parameters in the environmental variables is encouraged)
+- Remove remote argument (the practice of setting parameters in the URL is encouraged).
+- Remove user argument (the practice of setting parameters in the URL is encouraged).
+- Remove token argument (the practice of setting parameters in the URL is encouraged).
+- Remove remote argument (the practice of setting parameters in the URL is encouraged)
+
 # Ver. 1.5.0
 
 - Add `pull` function.
 - Bump cryptography.
-- Fix typo in READme.md.
+- Fix typo in README.md.
 - Fix Compatibility with pre-commit ansible-lint.
 
 # Ver. 1.4.1
