@@ -187,13 +187,15 @@ fi
 
     def pull(self):
         """Get git changes from upstream before pushing."""
+        url = self.module.params["url"]
+        branch = self.module.params["branch"]
         command = [
             self.git_path,
             "-C",
             self.path,
             "pull",
-            self.module.params["url"],
-            self.module.params["branch"],
+            url,
+            branch,
         ] + self.module.params["pull_options"]
         rc, output, error = self.module.run_command(command)
         if rc == 0:

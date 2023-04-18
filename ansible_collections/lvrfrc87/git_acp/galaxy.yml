@@ -1,12 +1,12 @@
 namespace: lvrfrc87
 name: git_acp
-version: 1.5.0
+version: 2.0.0
 readme: README.md
 
 authors:
     - Federico Olivieri <lvrfrc87@gmail.com>
 
-description: Manage git add, git commit, git push and git config user on a local or remote git repository.
+description: Manage git add, git commit, git push on a local or remote git repository.
 license:
     - GPL-3.0-only
 
