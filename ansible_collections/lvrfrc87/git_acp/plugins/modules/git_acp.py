@@ -28,15 +28,16 @@ options:
     comment:
         description:
             - Git commit comment. Same as C(git commit -m).
+              Required when using add.
         type: str
-        required: true
     add:
         description:
             - List of files under C(path) to be staged. Same as C(git add .).
               File globs not accepted, such as C(./*) or C(*).
+              Required when using comment.
         type: list
         elements: str
-        default: ["."]
+        default: None
     branch:
         description:
             - Git branch where perform git push.
@@ -54,6 +55,11 @@ options:
         type: list
         elements: str
         default: ['--no-edit']
+    push:
+        description:
+            - Perform a git push.
+        type: bool
+        default: True
     push_option:
         description:
             - Git push options. Same as C(git --push-option=option).
@@ -160,12 +166,13 @@ def main():
     argument_spec = dict(
         path=dict(required=True, type="path"),
         executable=dict(default=None, type="path"),
-        comment=dict(required=True),
-        add=dict(type="list", elements="str", default=["."]),
+        comment=dict(default=None, type="str"),
+        add=dict(default=None, type="list", elements="str"),
         ssh_params=dict(default=None, type="dict", required=False),
         branch=dict(default="main"),
         pull=dict(default=False, type="bool"),
         pull_options=dict(default=["--no-edit"], type="list", elements="str"),
+        push=dict(default=True, type="bool"),
         push_option=dict(default=None, type="str"),
         url=dict(required=True, no_log=True),
     )
@@ -175,7 +182,10 @@ def main():
     )
 
     url = module.params.get("url")
+    comment = module.params.get("comment")
+    add = module.params.get("add")
     pull = module.params.get("pull")
+    push = module.params.get("push")
     ssh_params = module.params.get("ssh_params")
 
     module.run_command_environ_update = dict(
@@ -193,15 +203,32 @@ def main():
                 msg='GitHub does not support "ssh://" URL. Please remove it from url'
             )
 
+    if add and not comment :
+        module.fail_json(
+            msg='Comment is required when using add'
+        )
+
+    if comment and not add :
+        module.fail_json(
+            msg='Add is required when using comment'
+        )
+
+    if not pull and not add and not push:
+        module.fail_json(
+            msg='Missing at least one required param: pull, add, push'
+        )
+
     git = Git(module)
     changed_files = git.status()
 
     if changed_files:
-        git.add()
-        result.update(git.commit())
         if pull:
             result.update(git.pull())
-        result.update(git.push())
+        if add:
+            git.add()
+            result.update(git.commit())
+        if push:
+            result.update(git.push())
         result["changed"] = True
 
     module.exit_json(**result)
