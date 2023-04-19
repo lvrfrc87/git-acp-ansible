@@ -172,21 +172,36 @@ fi
                 type: dict()
                 desription: returned output from git commit command and changed status
         """
-        result = dict()
         comment = self.module.params["comment"]
         command = [self.git_path, "commit", "-m", comment]
 
         rc, output, error = self.module.run_command(command, cwd=self.path)
 
         if rc == 0:
-            if output:
-                result.update({"git_commit": {"output": output, "error": error, "changed": True}})
-                return result
-        else:
-            FailingMessage(self.module, rc, command, output, error)
+            return {
+                "git_commit": {"output": output, "error": error, "changed": True}
+            }
+        FailingMessage(self.module, rc, command, output, error)
 
     def pull(self):
-        """Get git changes from upstream before pushing."""
+        """
+        Get git changes from upstream before pushing.
+
+        args:
+            * url:
+                type: str()
+                descrition: git url of the git repo.
+            * branch:
+                type: str()
+                descrition: git branch of the git repo.
+            * pull_options:
+                type: list()
+                desription: pull options added to the pull command.
+        return:
+            * result:
+                type: dict()
+                descrition: returned output from git pull command.
+        """
         url = self.module.params["url"]
         branch = self.module.params["branch"]
         command = [
