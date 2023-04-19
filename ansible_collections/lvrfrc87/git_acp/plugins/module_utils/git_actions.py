@@ -114,7 +114,7 @@ fi
         args:
             * module:
                 type: dict()
-                descrition: Ansible basic module utilities and module arguments.
+                description: Ansible basic module utilities and module arguments.
 
         return: null
         """
@@ -138,7 +138,7 @@ fi
         args:
             * module:
                 type: dict()
-                descrition: Ansible basic module utilities and module arguments.
+                description: Ansible basic module utilities and module arguments.
         return:
             * data:
                 type: set()
@@ -166,11 +166,11 @@ fi
         args:
             * module:
                 type: dict()
-                descrition: Ansible basic module utilities and module arguments.
+                description: Ansible basic module utilities and module arguments.
         return:
             * result:
                 type: dict()
-                desription: returned output from git commit command and changed status
+                description: returned output from git commit command and changed status
         """
         comment = self.module.params["comment"]
         command = [self.git_path, "commit", "-m", comment]
@@ -190,17 +190,17 @@ fi
         args:
             * url:
                 type: str()
-                descrition: git url of the git repo.
+                description: git url of the git repo.
             * branch:
                 type: str()
-                descrition: git branch of the git repo.
+                description: git branch of the git repo.
             * pull_options:
                 type: list()
-                desription: pull options added to the pull command.
+                description: pull options added to the pull command.
         return:
             * result:
                 type: dict()
-                descrition: returned output from git pull command.
+                description: returned output from git pull command.
         """
         url = self.module.params["url"]
         branch = self.module.params["branch"]
@@ -226,14 +226,14 @@ fi
         args:
             * path:
                 type: path
-                descrition: git repo local path.
+                description: git repo local path.
             * cmd_push:
                 type: list()
-                descrition: list of commands to perform git push operation.
+                description: list of commands to perform git push operation.
         return:
             * result:
                 type: dict()
-                desription: returned output from git push command and updated changed status.
+                description: returned output from git push command and updated changed status.
         """
         url = self.module.params["url"]
         branch = self.module.params["branch"]
