@@ -179,10 +179,11 @@ def main():
 
     module = AnsibleModule(
         argument_spec=argument_spec,
+        required_together=[("comment", "add")],
+        required_one_of=[("add", "pull", "push")]
     )
 
     url = module.params.get("url")
-    comment = module.params.get("comment")
     add = module.params.get("add")
     pull = module.params.get("pull")
     push = module.params.get("push")
@@ -202,21 +203,6 @@ def main():
             module.fail_json(
                 msg='GitHub does not support "ssh://" URL. Please remove it from url'
             )
-
-    if add and not comment :
-        module.fail_json(
-            msg='Comment is required when using add'
-        )
-
-    if comment and not add :
-        module.fail_json(
-            msg='Add is required when using comment'
-        )
-
-    if not pull and not add and not push:
-        module.fail_json(
-            msg='Missing at least one required param: pull, add, push'
-        )
 
     git = Git(module)
     changed_files = git.status()
