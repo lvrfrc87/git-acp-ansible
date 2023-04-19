@@ -228,12 +228,10 @@ fi
         if push_option:
             command.insert(3, "--push-option={0} ".format(push_option))
 
-        result = dict()
-
         rc, output, error = self.module.run_command(command, cwd=self.path)
 
         if rc == 0:
-            result.update({"git_push": {"output": str(output), "error": str(error), "changed": True}})
-            return result
-        else:
-            FailingMessage(self.module, rc, command, output, error)
+            return {
+                "git_push": {"output": str(output), "error": str(error), "changed": True}
+            }
+        FailingMessage(self.module, rc, command, output, error)
