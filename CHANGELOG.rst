@@ -1,3 +1,7 @@
+# Ver. 2.1.0
+
+- Add support for `push` option.
+
 # Ver. 2.0.0
 
 - Remove git config argument (the practice of setting parameters in the environmental variables is encouraged)

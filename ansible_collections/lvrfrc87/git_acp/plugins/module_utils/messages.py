@@ -11,19 +11,19 @@ class ModuleFailure:
         args:
             * module:
                 type: dict()
-                descrition: Ansible basic module utilities and module arguments.
+                description: Ansible basic module utilities and module arguments.
             * rc:
                 type: int()
-                descrition: rc code returned by shell command.
+                description: rc code returned by shell command.
             * command:
                 type: list()
-                descrition: list of string that compose the shell command.
+                description: list of string that compose the shell command.
             * output:
                 type: str()
-                descrition: stdout returned by the shell.
+                description: stdout returned by the shell.
             * error:
                 type: str()
-                descrition: stderreturned by the shell.
+                description: stder returned by the shell.
 
         return: None
         """

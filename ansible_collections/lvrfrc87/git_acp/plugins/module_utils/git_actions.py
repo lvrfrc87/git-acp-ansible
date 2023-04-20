@@ -114,7 +114,7 @@ fi
         args:
             * module:
                 type: dict()
-                descrition: Ansible basic module utilities and module arguments.
+                description: Ansible basic module utilities and module arguments.
 
         return: null
         """
@@ -138,7 +138,7 @@ fi
         args:
             * module:
                 type: dict()
-                descrition: Ansible basic module utilities and module arguments.
+                description: Ansible basic module utilities and module arguments.
         return:
             * data:
                 type: set()
@@ -166,27 +166,42 @@ fi
         args:
             * module:
                 type: dict()
-                descrition: Ansible basic module utilities and module arguments.
+                description: Ansible basic module utilities and module arguments.
         return:
             * result:
                 type: dict()
-                desription: returned output from git commit command and changed status
+                description: returned output from git commit command and changed status
         """
-        result = dict()
         comment = self.module.params["comment"]
         command = [self.git_path, "commit", "-m", comment]
 
         rc, output, error = self.module.run_command(command, cwd=self.path)
 
         if rc == 0:
-            if output:
-                result.update({"git_commit": {"output": output, "error": error, "changed": True}})
-                return result
-        else:
-            FailingMessage(self.module, rc, command, output, error)
+            return {
+                "git_commit": {"output": output, "error": error, "changed": True}
+            }
+        FailingMessage(self.module, rc, command, output, error)
 
     def pull(self):
-        """Get git changes from upstream before pushing."""
+        """
+        Get git changes from upstream before pushing.
+
+        args:
+            * url:
+                type: str()
+                description: git url of the git repo.
+            * branch:
+                type: str()
+                description: git branch of the git repo.
+            * pull_options:
+                type: list()
+                description: pull options added to the pull command.
+        return:
+            * result:
+                type: dict()
+                description: returned output from git pull command.
+        """
         url = self.module.params["url"]
         branch = self.module.params["branch"]
         command = [
@@ -211,14 +226,14 @@ fi
         args:
             * path:
                 type: path
-                descrition: git repo local path.
+                description: git repo local path.
             * cmd_push:
                 type: list()
-                descrition: list of commands to perform git push operation.
+                description: list of commands to perform git push operation.
         return:
             * result:
                 type: dict()
-                desription: returned output from git push command and updated changed status.
+                description: returned output from git push command and updated changed status.
         """
         url = self.module.params["url"]
         branch = self.module.params["branch"]
@@ -228,12 +243,10 @@ fi
         if push_option:
             command.insert(3, "--push-option={0} ".format(push_option))
 
-        result = dict()
-
         rc, output, error = self.module.run_command(command, cwd=self.path)
 
         if rc == 0:
-            result.update({"git_push": {"output": str(output), "error": str(error), "changed": True}})
-            return result
-        else:
-            FailingMessage(self.module, rc, command, output, error)
+            return {
+                "git_push": {"output": str(output), "error": str(error), "changed": True}
+            }
+        FailingMessage(self.module, rc, command, output, error)
