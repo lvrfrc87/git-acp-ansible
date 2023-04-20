@@ -15,10 +15,9 @@ DOCUMENTATION = """
 module: git_acp
 author:
     - "Federico Olivieri (@Federico87)"
-short_description: Perform git add, commit, pull and push operations. Set git config user name and email.
+short_description: Perform git add, commit, pull and push operations.
 description:
-    - Manage C(git add), C(git commit) C(git push), C(git pull), C(git config) user name and email on a local
-      or remote git repository.
+    - Manage C(git add), C(git commit) C(git push) and C(git pull) on a git repository.
 options:
     path:
         description:
@@ -28,13 +27,13 @@ options:
     comment:
         description:
             - Git commit comment. Same as C(git commit -m).
-              Required when using add.
+              Required when using C(add).
         type: str
     add:
         description:
             - List of files under C(path) to be staged. Same as C(git add .).
               File globs not accepted, such as C(./*) or C(*).
-              Required when using comment.
+              Required when using C(comment).
         type: list
         elements: str
         default: None
@@ -48,6 +47,7 @@ options:
             - Perform a git pull before pushing.
         type: bool
         default: False
+        version_added: "2.0.0"
     pull_options:
         description:
             - Options added to the pull command. See C(git pull --help) for available
@@ -55,6 +55,7 @@ options:
         type: list
         elements: str
         default: ['--no-edit']
+        version_added: "2.0.0"
     push:
         description:
             - Perform a git push.
@@ -77,12 +78,12 @@ options:
             key_file:
                 description:
                     - Specify an optional private key file path, on the target host, to use for the checkout.
+                type: path
             accept_hostkey:
                 description:
                     - If C(yes), ensure that "-o StrictHostKeyChecking=no" is
                       present as an ssh option.
                 type: bool
-                default: False
             ssh_opts:
                 description:
                     - Creates a wrapper script and exports the path as GIT_SSH
@@ -91,7 +92,6 @@ options:
                       (although this particular option is better set via
                       C(accept_hostkey)).
                 type: str
-                default: None
         version_added: "1.4.0"
     executable:
         description:
@@ -167,13 +167,14 @@ def main():
         path=dict(required=True, type="path"),
         executable=dict(default=None, type="path"),
         comment=dict(default=None, type="str"),
-        add=dict(default=None, type="list", elements="str"),
+        add=dict(default=".", type="list", elements="str"),
         ssh_params=dict(default=None, type="dict", required=False),
         branch=dict(default="main"),
         pull=dict(default=False, type="bool"),
         pull_options=dict(default=["--no-edit"], type="list", elements="str"),
         push=dict(default=True, type="bool"),
         push_option=dict(default=None, type="str"),
+        push_force=dict(default=False, type="bool"),
         url=dict(required=True, no_log=True),
     )
 
@@ -184,7 +185,6 @@ def main():
     )
 
     url = module.params.get("url")
-    add = module.params.get("add")
     pull = module.params.get("pull")
     push = module.params.get("push")
     ssh_params = module.params.get("ssh_params")
@@ -210,9 +210,10 @@ def main():
     if changed_files:
         if pull:
             result.update(git.pull())
-        if add:
-            git.add()
-            result.update(git.commit())
+ 
+        git.add()
+        result.update(git.commit())
+
         if push:
             result.update(git.push())
         result["changed"] = True
