@@ -3,6 +3,7 @@
 - Add support for `push` option.
 - Add `force_push` argument.
 - Improve README.md
+- Minor fixes and improvements
 
 # Ver. 2.0.0
 
