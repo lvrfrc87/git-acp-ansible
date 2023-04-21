@@ -2,7 +2,7 @@ Module documentation can be found [here](../../../README.md)
 
 ### HOW INSTALL COLLECTION
 
-- Locally using `tar` file: `ansible-galaxy collection install lvrfrc87-git_acp-1.5.0.tar.gz`
+- Locally using `tar` file: `ansible-galaxy collection install lvrfrc87-git_acp-2.1.0.tar.gz`
 
 - From GitHub: `ansible-galaxy collection install git+https://github.com/lvrfrc87/git-acp-ansible.git#ansible_collections/lvrfrc87/git_acp,master`
 
@@ -20,15 +20,16 @@ Module documentation can be found [here](../../../README.md)
     - lvrfrc87.git_acp
 
   tasks:
-    - name: 10005 - SETUP | https loca repo ahead.
-      register: result
+    - name: ADD FILE-1 VIA HTTPS.
+      environment:
+        GIT_AUTHOR_NAME: "me"
+        GIT_AUTHOR_EMAIL: "me@me.me"
+        GIT_COMMITTER_NAME: "me"
+        GIT_COMMITTER_EMAIL: "me@me.me"
       git_acp:
-        user: "{{ user }}"
-        token: "{{ token }}"
         path: "{{ working_dir }}"
-        branch: master
-        add: ["."]
-        comment: Local repo ahead
-        mode: https
-        url: "https://gitlab.com/networkAutomation/git_test_module.git"
+        branch: "master"
+        comment: "Add {{ file1 }}."
+        add: [ "." ]
+        url: "{{ https_repo }}"
 ```

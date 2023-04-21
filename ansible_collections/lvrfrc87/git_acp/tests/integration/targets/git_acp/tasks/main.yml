@@ -1,67 +1,66 @@
 ---
-- name: 10000 - SETUP | clone repo.
+- name: 10000 - SETUP REPO.
   git:
     repo: "{{ https_repo }}"
     dest: "{{ working_dir }}"
 
-- name: 10010 - COMMIT | nothing to commit.
+- name: 10010 - TEST NOTHING TO COMMIT.
   register: result
   git_acp:
     path: "{{ working_dir }}"
-    branch: master
+    branch: "master"
     add: [ "." ]
-    comment: Nothing to commit
+    comment: "Nothing to commit"
     url: "{{ https_repo }}"
 - debug: var=result
 - assert: { that: not result.changed }
 
-- name: 10020 - ADD FAIL | add not exsisting file.
+- name: 10020 - FAIL ADD NOT EXISTING FILE.
   register: result
   git_acp:
     path: "{{ working_dir }}"
-    branch: master
-    comment: Add not existing file
+    branch: "master"
+    comment: "Add not existing file"
     add: [ i_do_not_exsisit.txt ]
     url: "{{ https_repo }}"
-  ignore_errors: true
 - debug: var=result
 - assert: { that: not result.changed }
 
-- name: 10030 -SETUP | set first random file name.
+- name: 10030 - CREATE RANDOM FILE NAME.
   set_fact:
     file1: "{{ lookup('pipe','date +%s%N') }}.txt"
 
-- name: 10040 - SETUP | touch file1.
+- name: 10040 - CREATE RANDOM FILE.
   file:
     path: "{{ working_dir }}{{ item }}"
-    state: touch
+    state: "touch"
   loop:
     - "{{ file1 }}"
 
-- name: 10050 - HTTPS | add "{{ file1 }}" .
+- name: 10050 - ADD "{{ file1 }}" VIA HTTPS.
   register: result
   environment:
-    GIT_AUTHOR_NAME: me
-    GIT_AUTHOR_EMAIL: me@me.me
-    GIT_COMMITTER_NAME: me
-    GIT_COMMITTER_EMAIL: me@me.me
+    GIT_AUTHOR_NAME: "me"
+    GIT_AUTHOR_EMAIL: "me@me.me"
+    GIT_COMMITTER_NAME: "me"
+    GIT_COMMITTER_EMAIL: "me@me.me"
   git_acp:
     path: "{{ working_dir }}"
-    branch: master
-    comment: Add file1.
+    branch: "master"
+    comment: "Add {{ file1 }}."
     add: [ "." ]
     url: "{{ https_repo }}"
 - debug: var=result
 - assert: { that: result.changed }
 
-- name: 10060 - SETUP | rm file1.
+- name: 10060 - RM "{{ file1 }}".
   file:
     path: "{{ working_dir }}{{ item }}"
-    state: absent
+    state: "absent"
   loop:
     - "{{ file1 }}"
 
-- name: 10070 - HTTPS | assert warning message.
+- name: 10070 - PUSH REMOVE "{{ file1 }}" VIA HTTPS + FORCE.
   register: result
   environment:
     GIT_AUTHOR_NAME: me
@@ -70,8 +69,32 @@
     GIT_COMMITTER_EMAIL: me@me.me
   git_acp:
     path: "{{ working_dir }}"
-    branch: master
-    comment: Add file1.
+    branch: "master"
+    comment: "Remove {{ file1 }}."
+    add: [ "." ]
+    url: "{{ https_repo }}"
+    push_force: true
+- debug: var=result
+- assert: { that: result.warnings }
+
+- name: 10080 - CREATE RANDOM FILE.
+  file:
+    path: "{{ working_dir }}{{ item }}"
+    state: "touch"
+  loop:
+    - "{{ file1 }}"
+
+- name: 10090 - ASSERT WARNING MESSAGE SSH PARAMS ON HTTPS URL.
+  register: result
+  environment:
+    GIT_AUTHOR_NAME: me
+    GIT_AUTHOR_EMAIL: me@me.me
+    GIT_COMMITTER_NAME: me
+    GIT_COMMITTER_EMAIL: me@me.me
+  git_acp:
+    path: "{{ working_dir }}"
+    branch: "master"
+    comment: "Add {{ file1 }}."
     add: [ "." ]
     url: "{{ https_repo }}"
     ssh_params:
@@ -81,62 +104,193 @@
 - debug: var=result
 - assert: { that: result.warnings }
 
-- name: 10075 - SSH | fail because ssh:// in GitHub.
+- name: 10100 - FAIL BECAUS ssh:// IN GITHUB URL.
   register: result
   git_acp:
     path: "{{ working_dir }}"
-    branch: master
-    comment: fail because ssh in GitHub
+    branch: "master"
+    comment: "fail because ssh in GitHub"
     add: [ "." ]
     url: "ssh://git@github.com:lvrfrc87/git-acp-test.git"
   ignore_errors: true
 - debug: var=result
-- assert: { that: not result.changed }
+- assert: { that: result is failed }
 
-- name: 10077 - SETUP | touch file1.
+- name: 10110 - CREATE A TEMPORARY ORIGIN DIRECTORY.
+  register: _pull_src
+  tempfile:
+    state: directory
+
+- name: 10120 - CREATE A TEMPORARY DESTINATION DIRECTORY.
+  register: _pull_dest
+  tempfile:
+    state: directory
+
+- name: 10130 - INIT REPO IN ORIGIN DIRECTORY.
+  environment:
+    GIT_AUTHOR_NAME: me
+    GIT_AUTHOR_EMAIL: me@me.me
+    GIT_COMMITTER_NAME: me
+    GIT_COMMITTER_EMAIL: me@me.me
+  shell:
+    chdir: "{{ _pull_src.path }}"
+    cmd: |
+      git init
+      touch a.txt
+      git add -A
+      git checkout -b main
+      git commit -m 'commit 1'
+
+- name: 10140 - CLONE INTO DESTINATION.
+  git:
+    repo: "{{ _pull_src.path }}"
+    dest: "{{ _pull_dest.path }}"
+
+- name: 10150 - EVOLVE SOURCE REPO.
+  environment:
+    GIT_AUTHOR_NAME: me
+    GIT_AUTHOR_EMAIL: me@me.me
+    GIT_COMMITTER_NAME: me
+    GIT_COMMITTER_EMAIL: me@me.me
+  shell:
+    chdir: "{{ _pull_src.path }}"
+    cmd: |
+      touch b.txt
+      git add -A
+      git commit -m 'commit 2'
+
+- name: 10160 - ADD A FILE TO DESTINATION REPO.
+  file:
+    path: "{{ _pull_dest.path }}/c.txt"
+    state: touch
+
+- name: 10170 - FAIL WITHOUTH PULL.
+  register: _acp
+  ignore_errors: true
+  environment:
+    GIT_AUTHOR_NAME: me
+    GIT_AUTHOR_EMAIL: me@me.me
+    GIT_COMMITTER_NAME: me
+    GIT_COMMITTER_EMAIL: me@me.me
+  git_acp:
+    add: [ "c.txt" ]
+    branch: main
+    comment: commit 3
+    path: "{{ _pull_dest.path }}"
+    url: "{{ _pull_src.path }}"
+- assert: {that: _acp is failed}
+
+- name: 10180 - WORKS WITH PULL FIRST.
+  environment:
+    GIT_AUTHOR_NAME: me
+    GIT_AUTHOR_EMAIL: me@me.me
+    GIT_COMMITTER_NAME: me
+    GIT_COMMITTER_EMAIL: me@me.me
+  git_acp:
+    add: [ "c.txt" ]
+    branch: main
+    comment: commit 3
+    path: "{{ _pull_dest.path }}"
+    pull: true
+    url: "{{ _pull_src.path }}"
+
+- name: 10190 - CREATE RANDOM FILE NAME.
+  set_fact:
+    file2: "{{ lookup('pipe','date +%s%N') }}.txt"
+    file3: "{{ lookup('pipe','date +%s%N') }}.txt"
+    file4: "{{ lookup('pipe','date +%s%N') }}.txt"
+
+- name: 10200 - CREATE RANDOM FILE.
   file:
     path: "{{ working_dir }}{{ item }}"
-    state: touch
+    state: "touch"
   loop:
-    - "{{ file1 }}"
+    - "{{ file2 }}"
+    - "{{ file3 }}"
+    - "{{ file4 }}"
 
-- name: 10080 - SETUP | create temporary directory.
+- name: 10210 - ADD {{ file2 }} ONLY.
+  register: result
+  environment:
+    GIT_AUTHOR_NAME: me
+    GIT_AUTHOR_EMAIL: me@me.me
+    GIT_COMMITTER_NAME: me
+    GIT_COMMITTER_EMAIL: me@me.me
+  git_acp:
+    add: 
+      - "{{ item }}"
+    branch: "master"
+    comment: "Add {{ item }}"
+    path: "{{ working_dir }}"
+    push: false
+    url: "{{ https_repo }}"
+  loop:
+      - "{{ file2 }}"
+      - "{{ file3 }}"
+- debug: var=result
+- assert: {that: result.changed}
+
+- name: 10220 - PUSH {{ file2 }}, {{ file3 }} ALONG WITH {{ file4 }}.
+  register: result
+  environment:
+    GIT_AUTHOR_NAME: me
+    GIT_AUTHOR_EMAIL: me@me.me
+    GIT_COMMITTER_NAME: me
+    GIT_COMMITTER_EMAIL: me@me.me
+  git_acp:
+    branch: "master"
+    path: "{{ working_dir }}"
+    url: "{{ https_repo }}"
+    comment: "Add {{ file4 }}"
+- debug: var=result
+- assert: { that: result.changed }
+
+- name: 10230 - RM RANDOM FILE.
+  file:
+    path: "{{ working_dir }}{{ item }}"
+    state: "absent"
+  loop:
+    - "{{ file2 }}"
+    - "{{ file3 }}"
+    - "{{ file4 }}"
+
+- name: 10240 - CREATE TEMP DIRECTORY
   tempfile:
     state: directory
     suffix: .test
   register: remote_tmp_dir
 
-- name: 10090 -  SETUP | Record temporary directory.
-  set_fact:
-    remote_tmp_dir: "{{ remote_tmp_dir.path }}"
-    cacheable: true
-
-- name: 10100 - SETUP | check accept_hostkey support.
+- name: 10250 - CHECK ACCEPT HOSTKEY SUPPORT
   shell: ssh -o StrictHostKeyChecking=accept-new -V
   register: ssh_supports_accept_hostkey
   ignore_errors: true
 
-- name: 10110 - SETUP | missing hostkey tests.
+- name: MISSING HOSTKEY TEST
   when: ssh_supports_accept_hostkey.rc != 0
   block:
-    - name: 10120 - SSH | accept_hostkey when ssh does not support the option
+    - name: 10260 - ACCEPT_HOSTKEY WHEN SSH DOES NOT SUPPORT THE OPTION
+      register: result
+      environment:
+        GIT_AUTHOR_NAME: me
+        GIT_AUTHOR_EMAIL: me@me.me
+        GIT_COMMITTER_NAME: me
+        GIT_COMMITTER_EMAIL: me@me.me
       git_acp:
         url: "{{ ssh_repo }}"
         path: "{{ working_dir }}"
-        branch: master
-        comment: Add .
+        branch: "master"
+        comment: "Remove {{ file2 }}"
+        add: [ "{{ file2 }}" ]
         ssh_params:
           accept_hostkey: true
           key_file: '{{ github_ssh_private_key }}'
           ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
-      register: git_result
       ignore_errors: true
-    - assert:
-        that:
-          - git_result is failed
-          - git_result.warnings is search("does not support")
+    - debug: var=result
+    - assert: {that: [result is failed, result.warnings is search("does not support")]}
 
-- name: 10130 - SSH | push ssh://git@github.com repo without accept_hostkey (expected fail)
+- name: 10270 - FAIL PUSH SSH REPO WITHOUT ACCEPT_HOSTKEY.
+  register: result
   environment:
     GIT_AUTHOR_NAME: me
     GIT_AUTHOR_EMAIL: me@me.me
@@ -145,125 +299,73 @@
   git_acp:
     url: "{{ ssh_repo }}"
     path: "{{ working_dir }}"
-    branch: master
-    comment: Add .
+    branch: "master"
+    comment: "Remove {{ file3 }}"
+    add: [ "{{ file3 }}" ]
     ssh_params:
       ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
-  register: git_result
   ignore_errors: true
-- assert:
-    that:
-      - git_result is failed
+- debug: var=result
+- assert: { that: result is failed }
 
-- name: 10140 - SSH | Validate ssh with private host key.
+- name: VALIDATE SSH WITH PRIVATE HOST KEY
   when: github_ssh_private_key is defined and ssh_supports_accept_hostkey.rc == 0
   block:
-    - name: 10150 - SSH | checkout git@github.com repo with accept_hostkey (expected pass)
+    - name: 10280 - CHECKOUT GIT@GITHUB.COM REPO WITH ACCEPT_HOSTKEY (EXPECTED PASS)
+      register: result
+      environment:
+        GIT_AUTHOR_NAME: me
+        GIT_AUTHOR_EMAIL: me@me.me
+        GIT_COMMITTER_NAME: me
+        GIT_COMMITTER_EMAIL: me@me.me
       git_acp:
         path: "{{ working_dir }}"
         branch: master
-        comment: Add file1.
-        add: [ "{{ file1 }}" ]
+        comment: "Remove {{ file4 }}"
+        add: [ "{{ file4 }}" ]
         url: "{{ ssh_repo }}"
         ssh_params:
           accept_hostkey: true
           key_file: '{{ github_ssh_private_key }}'
           ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
-      register: git_result
-    - assert:
-        that:
-          - git_result is changed
+    - debug: var=result
+    - assert: {that: git_result is changed}
 
-    - name: 10160 - SSH| checkout ssh://git@github.com repo with accept_hostkey (expected pass).
+    - name: 10290 - CREATE RANDOM FILE.
+      file:
+        path: "{{ working_dir }}{{ item }}"
+        state: "touch"
+      loop:
+        - "{{ file1 }}"
+
+    - name: 10300 - CHECKOUT SSH://GIT@GITHUB.COM REPO WITH ACCEPT_HOSTKEY (EXPECTED PASS)
+      register: result
       git_acp:
         path: "{{ working_dir }}"
         branch: master
-        comment: Add file1.
+        comment: "Add {{ file1 }}."
         add: [ "{{ file1 }}" ]
         url: "{{ ssh_repo }}"
         ssh_params:
           accept_hostkey: false # should already have been accepted
           key_file: '{{ github_ssh_private_key }}'
           ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
-      register: git_result
-    - assert:
-        that:
-          - git_result is changed
+    - debug: var=result
+    - assert: {that: git_result is changed}
 
-    - name: 10170 - SSH | Remove github.com hostkey from known_hosts
+    - name: 10310 - REMOVE GITHUB.COM HOSTKEY FROM KNOWN_HOSTS
       lineinfile:
         dest: '{{ remote_tmp_dir }}/known_hosts'
         regexp: "github.com"
         state: absent
 
-    - name: 10180 - SETUP | debug default remote set.
+    - name: 10174 - DEBUG DEFAULT REMOTE SET
       shell: git -C "{{ working_dir }}" remote get-url --all origin
       register: remote
     - debug: var=remote
 
-- name: 10190 - SETUP | delete temporary directory
+- name: 10174 - DELETE TEMP DIRECTORY
   file:
     path: "{{ remote_tmp_dir }}"
     state: absent
   no_log: true
-
-
-- name: 10200 - SETUP | Create a temporary origin directory
-  register: _pull_src
-  tempfile:
-    state: directory
-
-- name: 10210 - SETUP | Create a temporary destination directory
-  register: _pull_dest
-  tempfile:
-    state: directory
-
-- name: 10220 - SETUP | Init origin directory
-  shell:
-    chdir: "{{ _pull_src }}"
-    cmd: |
-      git init
-      touch a.txt
-      git add -A
-      git checkout -b main
-      git commit -m 'commit 1'
-
-- name: 10230 - SETUP | Clone into destination
-  git:
-    repo: "{{ _pull_src }}"
-    dest: "{{ _pull_dest }}"
-
-- name: 10240 - SETUP | Evolve src repo
-  shell:
-    chdir: "{{ _pull_src }}"
-    cmd: |
-      touch b.txt
-      git add -A
-      git commit -m 'commit 2'
-
-- name: 10250 - SETUP | Add a file to destination repo
-  file:
-    path: "{{ _pull_dest }}/c.txt"
-    state: file
-
-- name: 10260 - PUSH | ACP without pull fails
-  register: _acp
-  ignore_errors: true
-  git_acp:
-    add: [ "c.txt" ]
-    branch: main
-    comment: commit 3
-    path: "{{ _pull_dest }}"
-    url: "{{ _pull_src }}"
-- name: Assert last task failed
-  assert:
-    that: _acp is failed
-
-- name: 10270 - PUSH | ACP with pull works
-  git_acp:
-    add: [ "c.txt" ]
-    branch: main
-    comment: commit 3
-    path: "{{ _pull_dest }}"
-    pull: true
-    url: "{{ _pull_src }}"
