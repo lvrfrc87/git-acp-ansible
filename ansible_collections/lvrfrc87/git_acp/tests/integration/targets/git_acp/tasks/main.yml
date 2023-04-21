@@ -75,7 +75,7 @@
     url: "{{ https_repo }}"
     push_force: true
 - debug: var=result
-- assert: { that: result.changed }
+- assert: { that: result.warnings }
 
 - name: 10080 - CREATE RANDOM FILE.
   file:
