@@ -15,10 +15,10 @@ DOCUMENTATION = """
 module: git_acp
 author:
     - "Federico Olivieri (@Federico87)"
-short_description: Perform git add, commit, pull and push operations. Set git config user name and email.
+short_description: Perform git add, commit, pull and push operations.
 description:
-    - Manage C(git add), C(git commit) C(git push), C(git pull), C(git config) user name and email on a local
-      or remote git repository.
+    - Manage C(git add), C(git commit) C(git push) and C(git pull) on a git repository.
+module: git_acp
 options:
     path:
         description:
@@ -28,16 +28,16 @@ options:
     comment:
         description:
             - Git commit comment. Same as C(git commit -m).
-              Required when using add.
+              Required when using C(add).
         type: str
     add:
         description:
             - List of files under C(path) to be staged. Same as C(git add .).
               File globs not accepted, such as C(./*) or C(*).
-              Required when using comment.
+              Required when using C(comment).
         type: list
         elements: str
-        default: None
+        default: ["."]
     branch:
         description:
             - Git branch where perform git push.
@@ -48,6 +48,7 @@ options:
             - Perform a git pull before pushing.
         type: bool
         default: False
+        version_added: "2.0.0"
     pull_options:
         description:
             - Options added to the pull command. See C(git pull --help) for available
@@ -55,6 +56,7 @@ options:
         type: list
         elements: str
         default: ['--no-edit']
+        version_added: "2.0.0"
     push:
         description:
             - Perform a git push.
@@ -64,6 +66,12 @@ options:
         description:
             - Git push options. Same as C(git --push-option=option).
         type: str
+    push_force:
+        description:
+            - Git push force options. Same as C(git push --force).
+        type: bool
+        default: False
+        version_added: "2.1.0"
     url:
         description:
             - Git repo URL.
@@ -77,12 +85,12 @@ options:
             key_file:
                 description:
                     - Specify an optional private key file path, on the target host, to use for the checkout.
+                type: path
             accept_hostkey:
                 description:
                     - If C(yes), ensure that "-o StrictHostKeyChecking=no" is
                       present as an ssh option.
                 type: bool
-                default: False
             ssh_opts:
                 description:
                     - Creates a wrapper script and exports the path as GIT_SSH
@@ -91,7 +99,6 @@ options:
                       (although this particular option is better set via
                       C(accept_hostkey)).
                 type: str
-                default: None
         version_added: "1.4.0"
     executable:
         description:
@@ -104,49 +111,114 @@ requirements:
 """
 
 EXAMPLES = """
-- name: HTTPS | add file1.
+- name: ADD FILE-1 VIA HTTPS.
+  environment:
+    GIT_AUTHOR_NAME: "me"
+    GIT_AUTHOR_EMAIL: "me@me.me"
+    GIT_COMMITTER_NAME: "me"
+    GIT_COMMITTER_EMAIL: "me@me.me"
   git_acp:
-    path: "/Users/git/git_acp"
-    comment: "Add file1."
+    path: "{{ working_dir }}"
+    branch: "master"
+    comment: "Add {{ file1 }}."
     add: [ "." ]
-    url: "https://Federico87:mytoken@gitlab.com/networkAutomation/git_test_module.git"
+    url: "{{ https_repo }}"
 
-- name: SSH | add file2.
+- name: PUSH REMOVE FILE-1 VIA HTTPS + FORCE.
+  environment:
+    GIT_AUTHOR_NAME: "me"
+    GIT_AUTHOR_EMAIL: "me@me.me"
+    GIT_COMMITTER_NAME: "me"
+    GIT_COMMITTER_EMAIL: "me@me.me"
   git_acp:
-    path: "/Users/git/git_acp"
-    branch: development
-    comment: Add file2.
-    add: [ "file2" ]
-    url: "git@gitlab.com:networkAutomation/git_test_module.git dev_test"
+    path: "{{ working_dir }}"
+    branch: "master"
+    comment: "Remove {{ file1 }}."
+    add: [ "." ]
+    url: "{{ https_repo }}"
+    push_force: true
 
-- name: LOCAL | push on local repo.
+- name: PULL BEFORE TO PUSH.
+  environment:
+    GIT_AUTHOR_NAME: "me"
+    GIT_AUTHOR_EMAIL: "me@me.me"
+    GIT_COMMITTER_NAME: "me"
+    GIT_COMMITTER_EMAIL: "me@me.me"
   git_acp:
-    path: "~/test_directory/repo"
-    comment: Add file3.
-    add: [ "file3" ]
-    url: /Users/federicoolivieri/test_directory/repo.git
-
-- name: SSH | pull before to push.
-  git_acp:
-    add: [ "c.txt" ]
-    comment: "commit 3"
-    path: "~/test_directory/repo"
+    comment: "Pull before to push."
+    path: "{{ _pull_dest.path }}"
+    url: "{{ _pull_src.path }}"
     pull: true
-    url: "git@gitlab.com:networkAutomation/git_test_module.git automation"
+
+- name: ADD FILES ONLY. - NO PUSH
+  environment:
+    GIT_AUTHOR_NAME: "me"
+    GIT_AUTHOR_EMAIL: "me@me.me"
+    GIT_COMMITTER_NAME: "me"
+    GIT_COMMITTER_EMAIL: "me@me.me"
+  git_acp:
+    add:
+      - "{{ item }}"
+    branch: "master"
+    comment: "Add {{ item }}"
+    path: "{{ working_dir }}"
+    push: false
+    url: "{{ https_repo }}"
+  loop:
+      - "{{ file2 }}"
+      - "{{ file3 }}"
+
+- name: 10220 - PUSH FILE-2, FILE-3 ALONG WITH FILE-4.
+  environment:
+    GIT_AUTHOR_NAME: "me"
+    GIT_AUTHOR_EMAIL: "me@me.me"
+    GIT_COMMITTER_NAME: "me"
+    GIT_COMMITTER_EMAIL: "me@me.me"
+  git_acp:
+    branch: "master"
+    path: "{{ working_dir }}"
+    url: "{{ https_repo }}"
+    comment: "Add {{ file4 }}"
+
+- name: PUSH VIA SSH AND CCEPT_HOSTKEY WHEN SSH DOES NOT SUPPORT THE OPTION
+  environment:
+    GIT_AUTHOR_NAME: me
+    GIT_AUTHOR_EMAIL: me@me.me
+    GIT_COMMITTER_NAME: me
+    GIT_COMMITTER_EMAIL: me@me.me
+  git_acp:
+    url: "{{ ssh_repo }}"
+    path: "{{ working_dir }}"
+    branch: "master"
+    comment: "Remove {{ file2 }}"
+    add: [ "{{ file2 }}" ]
     ssh_params:
         accept_hostkey: true
-        key_file: "{{ github_ssh_private_key }}"
-        ssh_opts: "-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts"
+        key_file: '{{ github_ssh_private_key }}'
+        ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
 """
 
 RETURN = """
 output:
-    description: list of git cli commands stdout
-    type: list
+    description: dic of git cli commands stdout
+    type: dict
     returned: always
-    sample: [
-        "[master 99830f4] Remove [ test.txt, tax.txt ]\n 4 files changed, 26 insertions(+)..."
-    ]
+    sample: {
+    "result": {
+        "changed": true,
+        "failed": false,
+        "git_commit": {
+            "changed": true,
+            "error": "",
+            "output": "[master 4596d9d] Add 1682063905033586650.txt.\n 1 file changed, ..."
+        },
+        "git_push": {
+            "changed": true,
+            "error": "",
+            "output": "remote: Resolving deltas:   0% (0/1)        \rremote: Resolving ..."
+        }
+    }
+}
 """
 
 from ansible.module_utils.basic import AnsibleModule
@@ -167,13 +239,14 @@ def main():
         path=dict(required=True, type="path"),
         executable=dict(default=None, type="path"),
         comment=dict(default=None, type="str"),
-        add=dict(default=None, type="list", elements="str"),
+        add=dict(default=".", type="list", elements="str"),
         ssh_params=dict(default=None, type="dict", required=False),
         branch=dict(default="main"),
         pull=dict(default=False, type="bool"),
         pull_options=dict(default=["--no-edit"], type="list", elements="str"),
         push=dict(default=True, type="bool"),
         push_option=dict(default=None, type="str"),
+        push_force=dict(default=False, type="bool"),
         url=dict(required=True, no_log=True),
     )
 
@@ -184,7 +257,6 @@ def main():
     )
 
     url = module.params.get("url")
-    add = module.params.get("add")
     pull = module.params.get("pull")
     push = module.params.get("push")
     ssh_params = module.params.get("ssh_params")
@@ -210,9 +282,10 @@ def main():
     if changed_files:
         if pull:
             result.update(git.pull())
-        if add:
-            git.add()
-            result.update(git.commit())
+
+        git.add()
+        result.update(git.commit())
+
         if push:
             result.update(git.push())
         result["changed"] = True

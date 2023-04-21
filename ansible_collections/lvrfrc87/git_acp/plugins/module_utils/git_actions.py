@@ -238,12 +238,17 @@ fi
         url = self.module.params["url"]
         branch = self.module.params["branch"]
         push_option = self.module.params.get("push_option")
+        push_force = self.module.params.get("push_force")
+
         command = [self.git_path, "push", url, branch]
 
         if push_option:
             command.insert(3, "--push-option={0} ".format(push_option))
 
-        rc, output, error = self.module.run_command(command, cwd=self.path)
+        if push_force:
+            command.append("--force")
+        # Push result is returned in stderr instead of stdout, hence vars position is inverted.
+        rc, error, output = self.module.run_command(command, cwd=self.path)
 
         if rc == 0:
             return {
