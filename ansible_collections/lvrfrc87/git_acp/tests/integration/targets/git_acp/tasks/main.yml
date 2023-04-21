@@ -270,88 +270,102 @@
   block:
     - name: 10260 - ACCEPT_HOSTKEY WHEN SSH DOES NOT SUPPORT THE OPTION
       register: result
+      environment:
+        GIT_AUTHOR_NAME: me
+        GIT_AUTHOR_EMAIL: me@me.me
+        GIT_COMMITTER_NAME: me
+        GIT_COMMITTER_EMAIL: me@me.me
       git_acp:
         url: "{{ ssh_repo }}"
         path: "{{ working_dir }}"
         branch: "master"
-        comment: "Remove previous files"
+        comment: "Remove {{ file2 }}"
+        add: [ "{{ file2 }}" ]
         ssh_params:
           accept_hostkey: true
           key_file: '{{ github_ssh_private_key }}'
           ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
       ignore_errors: true
     - debug: var=result
-    - assert:
-        that:
-          - result is failed
-          - result.warnings is search("does not support")
-
+    - assert: {that: [result is failed, result.warnings is search("does not support")]}
 
 - name: 10270 - FAIL PUSH SSH REPO WITHOUT ACCEPT_HOSTKEY.
   register: result
+  environment:
+    GIT_AUTHOR_NAME: me
+    GIT_AUTHOR_EMAIL: me@me.me
+    GIT_COMMITTER_NAME: me
+    GIT_COMMITTER_EMAIL: me@me.me
   git_acp:
     url: "{{ ssh_repo }}"
     path: "{{ working_dir }}"
     branch: "master"
-    comment: "Remove previous files"
+    comment: "Remove {{ file3 }}"
+    add: [ "{{ file3 }}" ]
     ssh_params:
       ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
   ignore_errors: true
 - debug: var=result
 - assert: { that: result is failed }
 
-- name: 10169 - HOSTKEY TESTS | Validate ssh with private host key
+- name: VALIDATE SSH WITH PRIVATE HOST KEY
   when: github_ssh_private_key is defined and ssh_supports_accept_hostkey.rc == 0
   block:
-    - name: 10170 - HOSTKEY TESTS | checkout git@github.com repo with accept_hostkey (expected pass)
+    - name: 10280 - CHECKOUT GIT@GITHUB.COM REPO WITH ACCEPT_HOSTKEY (EXPECTED PASS)
+      register: result
+      environment:
+        GIT_AUTHOR_NAME: me
+        GIT_AUTHOR_EMAIL: me@me.me
+        GIT_COMMITTER_NAME: me
+        GIT_COMMITTER_EMAIL: me@me.me
       git_acp:
         path: "{{ working_dir }}"
         branch: master
-        comment: Add file1.
-        add: [ "{{ file1 }}" ]
-        mode: ssh
-        url: "git@gitlab.com:networkAutomation/git_test_module.git"
+        comment: "Remove {{ file4 }}"
+        add: [ "{{ file4 }}" ]
+        url: "{{ ssh_repo }}"
         ssh_params:
           accept_hostkey: true
           key_file: '{{ github_ssh_private_key }}'
           ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
-      register: git_result
+    - debug: var=result
+    - assert: {that: git_result is changed}
 
-    - assert:
-        that:
-          - git_result is changed
+    - name: 10290 - CREATE RANDOM FILE.
+      file:
+        path: "{{ working_dir }}{{ item }}"
+        state: "touch"
+      loop:
+        - "{{ file1 }}"
 
-    - name: 10172 - HOSTKEY TESTS | checkout ssh://git@github.com repo with accept_hostkey (expected pass)
+    - name: 10300 - CHECKOUT SSH://GIT@GITHUB.COM REPO WITH ACCEPT_HOSTKEY (EXPECTED PASS)
+      register: result
       git_acp:
         path: "{{ working_dir }}"
         branch: master
-        comment: Add file1.
+        comment: "Add {{ file1 }}."
         add: [ "{{ file1 }}" ]
-        mode: ssh
-        url: "git@gitlab.com:networkAutomation/git_test_module.git"
+        url: "{{ ssh_repo }}"
         ssh_params:
           accept_hostkey: false # should already have been accepted
           key_file: '{{ github_ssh_private_key }}'
           ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
-      register: git_result
+    - debug: var=result
+    - assert: {that: git_result is changed}
 
-    - assert:
-        that:
-          - git_result is changed
-
-    - name: 10173 - HOSTKEY TESTS | Remove github.com hostkey from known_hosts
+    - name: 10310 - REMOVE GITHUB.COM HOSTKEY FROM KNOWN_HOSTS
       lineinfile:
         dest: '{{ remote_tmp_dir }}/known_hosts'
         regexp: "github.com"
         state: absent
 
-    - name: 10174 - SETUP (SSH-with-private-key) | debug default remote set.
+    - name: 10174 - DEBUG DEFAULT REMOTE SET
       shell: git -C "{{ working_dir }}" remote get-url --all origin
       register: remote
     - debug: var=remote
 
-- name: 10174 - delete temporary directory
+- name: 10174 - DELETE TEMP DIRECTORY
   file:
     path: "{{ remote_tmp_dir }}"
     state: absent
-  no_log: yes
+  no_log: true
