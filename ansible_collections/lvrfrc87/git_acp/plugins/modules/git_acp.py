@@ -18,6 +18,7 @@ author:
 short_description: Perform git add, commit, pull and push operations.
 description:
     - Manage C(git add), C(git commit) C(git push) and C(git pull) on a git repository.
+module: git_acp
 options:
     path:
         description:
