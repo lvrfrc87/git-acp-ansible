@@ -25,7 +25,7 @@ All info related to Ansible Galaxy install are available [here](ansible_collecti
 ### Module Documentation:
 
 ```
-module: git_acp
+options:
     path:
         description:
             - Folder path where C(.git/) is located.
@@ -34,12 +34,13 @@ module: git_acp
     comment:
         description:
             - Git commit comment. Same as C(git commit -m).
+              Required when using C(add).
         type: str
-        required: true
     add:
         description:
             - List of files under C(path) to be staged. Same as C(git add .).
               File globs not accepted, such as C(./*) or C(*).
+              Required when using C(comment).
         type: list
         elements: str
         default: ["."]
@@ -53,7 +54,7 @@ module: git_acp
             - Perform a git pull before pushing.
         type: bool
         default: False
-        version_added: "1.5.0"
+        version_added: "2.0.0"
     pull_options:
         description:
             - Options added to the pull command. See C(git pull --help) for available
@@ -61,11 +62,22 @@ module: git_acp
         type: list
         elements: str
         default: ['--no-edit']
-        version_added: "1.5.0"
+        version_added: "2.0.0"
+    push:
+        description:
+            - Perform a git push.
+        type: bool
+        default: True
     push_option:
         description:
             - Git push options. Same as C(git --push-option=option).
         type: str
+    push_force:
+        description:
+            - Git push force options. Same as C(git push --force).
+        type: bool
+        default: False
+        version_added: "2.1.0"
     url:
         description:
             - Git repo URL.
@@ -79,12 +91,12 @@ module: git_acp
             key_file:
                 description:
                     - Specify an optional private key file path, on the target host, to use for the checkout.
+                type: path
             accept_hostkey:
                 description:
                     - If C(yes), ensure that "-o StrictHostKeyChecking=no" is
                       present as an ssh option.
                 type: bool
-                default: False
             ssh_opts:
                 description:
                     - Creates a wrapper script and exports the path as GIT_SSH
@@ -93,7 +105,6 @@ module: git_acp
                       (although this particular option is better set via
                       C(accept_hostkey)).
                 type: str
-                default: None
         version_added: "1.4.0"
     executable:
         description:
@@ -106,37 +117,111 @@ module: git_acp
 ### Examples:
 
 ```
-- name: HTTPS | add file1.
+- name: ADD FILE-1 VIA HTTPS.
+  environment:
+    GIT_AUTHOR_NAME: "me"
+    GIT_AUTHOR_EMAIL: "me@me.me"
+    GIT_COMMITTER_NAME: "me"
+    GIT_COMMITTER_EMAIL: "me@me.me"
   git_acp:
-    path: "/Users/git/git_acp"
-    comment: "Add file1."
+    path: "{{ working_dir }}"
+    branch: "master"
+    comment: "Add {{ file1 }}."
     add: [ "." ]
-    url: "https://Federico87:mytoken@gitlab.com/networkAutomation/git_test_module.git"
+    url: "{{ https_repo }}"
 
-- name: SSH | add file2.
+- name: PUSH REMOVE FILE-1 VIA HTTPS + FORCE.
+  environment:
+    GIT_AUTHOR_NAME: "me"
+    GIT_AUTHOR_EMAIL: "me@me.me"
+    GIT_COMMITTER_NAME: "me"
+    GIT_COMMITTER_EMAIL: "me@me.me"
   git_acp:
-    path: "/Users/git/git_acp"
-    branch: development
-    comment: Add file2.
-    add: [ "file2" ]
-    url: "git@gitlab.com:networkAutomation/git_test_module.git dev_test"
+    path: "{{ working_dir }}"
+    branch: "master"
+    comment: "Remove {{ file1 }}."
+    add: [ "." ]
+    url: "{{ https_repo }}"
+    push_force: true
 
-- name: LOCAL | push on local repo.
+- name: PULL BEFORE TO PUSH.
+  environment:
+    GIT_AUTHOR_NAME: "me"
+    GIT_AUTHOR_EMAIL: "me@me.me"
+    GIT_COMMITTER_NAME: "me"
+    GIT_COMMITTER_EMAIL: "me@me.me"
   git_acp:
-    path: "~/test_directory/repo"
-    comment: Add file3.
-    add: [ "file3" ]
-    url: /Users/federicoolivieri/test_directory/repo.git
-
-- name: SSH | pull before to push.
-  git_acp:
-    add: [ "c.txt" ]
-    comment: "commit 3"
-    path: "~/test_directory/repo"
+    comment: "Pull before to push."
+    path: "{{ _pull_dest.path }}"
+    url: "{{ _pull_src.path }}"
     pull: true
-    url: "git@gitlab.com:networkAutomation/git_test_module.git automation"
+
+- name: ADD FILES ONLY. - NO PUSH
+  environment:
+    GIT_AUTHOR_NAME: "me"
+    GIT_AUTHOR_EMAIL: "me@me.me"
+    GIT_COMMITTER_NAME: "me"
+    GIT_COMMITTER_EMAIL: "me@me.me"
+  git_acp:
+    add: 
+      - "{{ item }}"
+    branch: "master"
+    comment: "Add {{ item }}"
+    path: "{{ working_dir }}"
+    push: false
+    url: "{{ https_repo }}"
+  loop:
+      - "{{ file2 }}"
+      - "{{ file3 }}"
+
+- name: 10220 - PUSH FILE-2, FILE-3 ALONG WITH FILE-4.
+  environment:
+    GIT_AUTHOR_NAME: "me"
+    GIT_AUTHOR_EMAIL: "me@me.me"
+    GIT_COMMITTER_NAME: "me"
+    GIT_COMMITTER_EMAIL: "me@me.me"
+  git_acp:
+    branch: "master"
+    path: "{{ working_dir }}"
+    url: "{{ https_repo }}"
+    comment: "Add {{ file4 }}"
+
+    
+- name: PUSH VIA SSH AND CCEPT_HOSTKEY WHEN SSH DOES NOT SUPPORT THE OPTION
+  environment:
+    GIT_AUTHOR_NAME: me
+    GIT_AUTHOR_EMAIL: me@me.me
+    GIT_COMMITTER_NAME: me
+    GIT_COMMITTER_EMAIL: me@me.me
+  git_acp:
+    url: "{{ ssh_repo }}"
+    path: "{{ working_dir }}"
+    branch: "master"
+    comment: "Remove {{ file2 }}"
+    add: [ "{{ file2 }}" ]
     ssh_params:
         accept_hostkey: true
-        key_file: "{{ github_ssh_private_key }}"
-        ssh_opts: "-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts"
+        key_file: '{{ github_ssh_private_key }}'
+        ssh_opts: '-o UserKnownHostsFile={{ remote_tmp_dir }}/known_hosts'
+```
+
+### Return Example:
+
+```
+ {
+    "result": {
+        "changed": true,
+        "failed": false,
+        "git_commit": {
+            "changed": true,
+            "error": "",
+            "output": "[master 4596d9d] Add 1682063905033586650.txt.\n 1 file changed, 0 insertions(+), 0 deletions(-)\n create mode 100644 1682063905033586650.txt\n"
+        },
+        "git_push": {
+            "changed": true,
+            "error": "",
+            "output": "remote: Resolving deltas:   0% (0/1)        \rremote: Resolving deltas: 100% (1/1)        \rremote: Resolving deltas: 100% (1/1), completed with 1 local object.        \nTo https://github.com/lvrfrc87/git-acp-test.git\n   3ba9041..4596d9d  master -> master\n"
+        }
+    }
+}
 ```
