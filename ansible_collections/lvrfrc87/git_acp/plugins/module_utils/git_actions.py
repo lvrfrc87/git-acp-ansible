@@ -244,11 +244,11 @@ fi
 
         if push_option:
             command.insert(3, "--push-option={0} ".format(push_option))
-        
+
         if push_force:
             command.append("--force")
-
-        rc, output, error = self.module.run_command(command, cwd=self.path)
+        # Push result is returned in stderr instead of stdout, hence vars position is inverted.
+        rc, error, output = self.module.run_command(command, cwd=self.path)
 
         if rc == 0:
             return {
