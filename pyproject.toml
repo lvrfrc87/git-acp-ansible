@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "git-acp-ansible"
-version = "2.1.0"
-description = "Git Add/Commit/Push Ansible module."
-authors = ["Federico Olivieri <lvrfrc87@gmail.com"]
+name = "git-mactp-ansible"
+version = "3.0.0"
+description = "Git operations Ansible module."
+authors = ["Federico Olivieri <lvrfrc87@gmail.com>", "Julian Mathes <julian.mathes@studyly.com>"]
 license = "GPL-3.0-only"
 readme = "README.md"
-homepage = "https://github.com/lvrfrc87/git-acp-ansible"
-repository = "https://github.com/lvrfrc87/git-acp-ansible"
+homepage = "https://github.com/Studyly-GmbH/git-mactp-ansible"
+repository = "https://github.com/Studyly-GmbH/git-mactp-ansible"
 keywords = ["ansible", "git", "automation", "devops"]
 include = [
     "LICENSE",

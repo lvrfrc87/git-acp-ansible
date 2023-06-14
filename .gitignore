@@ -1,7 +1,11 @@
 # Custom
 .vscode
-ansible_collections/lvrfrc87/git_acp/tests/output
+ansible_collections/studyly/git_mactp/tests/output
 *.DS_Store
+ansible_collections/studyly/git_mactp/tests/tests_own
+
+# Delete this once the test structure is used
+ansible_collections/studyly/git_mactp/tests
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

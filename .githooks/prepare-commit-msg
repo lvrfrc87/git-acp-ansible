@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# All .githooks directories originate 
+# from the .githooks directory in the devops repo
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+SHA1=$3
+
+# get branch name
+BRANCH_NAME=$(git symbolic-ref --short HEAD)
+
+# exit when BRANCH_NAME is empty or 
+# COMMIT_SOURCE not commit, message or squash
+if [ -z "${BRANCH_NAME}" ] || \
+   ([ "$COMMIT_SOURCE" != "commit" ] && \
+    [ "$COMMIT_SOURCE" != "squash" ] && \
+    [ "$COMMIT_SOURCE" != "message" ]); then
+    exit 0
+fi
+
+# prepend branchname to commit message
+sed -i.bak -e "1s/^/$BRANCH_NAME: /" $1

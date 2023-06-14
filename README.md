@@ -1,18 +1,18 @@
-# git-acp-ansible
+# git-mactp-ansible
 
-`git_acp` is an Ansible module for `git add`, `git commit`, `git push` and `git pull` operations on local or remote (https/ssh) git repo. The module will interact with the local shell execution environment, so certain commands such as setting a new git URL will edit the local `.git/config`.
+`git_mactp` is an Ansible module for `git add`, `git commit`, `git push`, `git merge`, `git tag` and `git pull` operations on local or remote (https/ssh) git repo. The module will interact with the local shell execution environment, so certain commands such as setting a new git URL will edit the local `.git/config`. This repo was forked from [lvrfrc87](https://github.com/lvrfrc87/git-acp-ansible).
 
 ### PyPi Install:
 
 PyPi package is not longer supported (last version available is `1.1.2`). Using collection is strongly advised.
-For older Ansible versions that do not support collection, you can copy `ansible_collections/lvrfrc87/git_acp/plugins/modules/git_acp.py` into `library` directory in the root of your Ansible project:
+For older Ansible versions that do not support collection, you can copy `ansible_collections/studyly/git_mactp/plugins/modules/git_mactp.py` into `library` directory in the root of your Ansible project:
 
 ```
 myproject/
 ├── ansible.cfg
 ├── inv/
 ├── library/
-│   ├── git_acp.py
+│   ├── git_mactp.py
 ├── playbooks/
 ├── roles/
 ```
@@ -20,7 +20,7 @@ myproject/
 
 ### Ansible Galaxy Install (for Ansible version > 2.9)
 
-All info related to Ansible Galaxy install are available [here](ansible_collections/lvrfrc87/git_acp/README.md)
+All info related to Ansible Galaxy install are available [here](ansible_collections/studyly/git_mactp/README.md)
 
 ### Module Documentation:
 
@@ -49,6 +49,11 @@ options:
             - Git branch where perform git push.
         type: str
         default: main
+    merge:
+        description:
+            - Name of the branch that should be merged into the current branch. Perform merge from given branch into current branch. 
+        type: str
+        version_added: "3.0.0"
     pull:
         description:
             - Perform a git pull before pushing.
@@ -106,6 +111,11 @@ options:
                       C(accept_hostkey)).
                 type: str
         version_added: "1.4.0"
+    tag:
+        description:
+            - Name of the git tag. Tag the current state of the branch.
+        type: str
+        version_added: "3.0.0"
     executable:
         description:
             - Path to git executable to use. If not supplied,
@@ -123,7 +133,7 @@ options:
     GIT_AUTHOR_EMAIL: "me@me.me"
     GIT_COMMITTER_NAME: "me"
     GIT_COMMITTER_EMAIL: "me@me.me"
-  git_acp:
+  git_mactp:
     path: "{{ working_dir }}"
     branch: "master"
     comment: "Add {{ file1 }}."
@@ -136,7 +146,7 @@ options:
     GIT_AUTHOR_EMAIL: "me@me.me"
     GIT_COMMITTER_NAME: "me"
     GIT_COMMITTER_EMAIL: "me@me.me"
-  git_acp:
+  git_mactp:
     path: "{{ working_dir }}"
     branch: "master"
     comment: "Remove {{ file1 }}."
@@ -150,7 +160,7 @@ options:
     GIT_AUTHOR_EMAIL: "me@me.me"
     GIT_COMMITTER_NAME: "me"
     GIT_COMMITTER_EMAIL: "me@me.me"
-  git_acp:
+  git_mactp:
     comment: "Pull before to push."
     path: "{{ _pull_dest.path }}"
     url: "{{ _pull_src.path }}"
@@ -162,7 +172,7 @@ options:
     GIT_AUTHOR_EMAIL: "me@me.me"
     GIT_COMMITTER_NAME: "me"
     GIT_COMMITTER_EMAIL: "me@me.me"
-  git_acp:
+  git_mactp:
     add: 
       - "{{ item }}"
     branch: "master"
@@ -180,7 +190,7 @@ options:
     GIT_AUTHOR_EMAIL: "me@me.me"
     GIT_COMMITTER_NAME: "me"
     GIT_COMMITTER_EMAIL: "me@me.me"
-  git_acp:
+  git_mactp:
     branch: "master"
     path: "{{ working_dir }}"
     url: "{{ https_repo }}"
@@ -193,7 +203,7 @@ options:
     GIT_AUTHOR_EMAIL: me@me.me
     GIT_COMMITTER_NAME: me
     GIT_COMMITTER_EMAIL: me@me.me
-  git_acp:
+  git_mactp:
     url: "{{ ssh_repo }}"
     path: "{{ working_dir }}"
     branch: "master"

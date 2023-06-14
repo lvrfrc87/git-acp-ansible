@@ -1,7 +1,0 @@
----
-user: "lvrfrc87"
-token: "{{ lookup('env', 'GIT_ACP_TOKEN') }}"
-working_dir: "$HOME/git_acp_test/"
-github_ssh_private_key: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
-https_repo: "https://{{ token }}@github.com/{{ user }}/git-acp-test.git"
-ssh_repo: "git@github.com:{{ user }}/git-acp-test.git"

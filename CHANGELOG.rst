@@ -1,3 +1,9 @@
+# Ver. 3.0.0
+- Change the original repo to allow more general usage
+- Add git tag functionality
+- Add git merge functionality
+- Add git checkout functionality
+
 # Ver. 2.1.0
 
 - Add support for `push` option.
@@ -103,4 +109,4 @@
 
 # Ver. 1.0.0
 
-- Build pypi package for git_acp ansible install.
+- Build pypi package for git_mactp ansible install.

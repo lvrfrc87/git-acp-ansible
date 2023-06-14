@@ -6,7 +6,7 @@ import os
 import stat
 import tempfile
 
-from ansible_collections.lvrfrc87.git_acp.plugins.module_utils.messages import (
+from ansible_collections.studyly.git_mactp.plugins.module_utils.messages import (
     FailingMessage,
 )
 from ansible.module_utils.six import b
@@ -131,6 +131,31 @@ fi
 
         FailingMessage(self.module, rc, command, output, error)
 
+    def checkout(self):
+        """
+        Checkout branch
+        Fails if branch couldn't be checked out.
+
+        args:
+            * module:
+                type: dict()
+                description: Ansible basic module utilities and module arguments.
+        return:
+            * data:
+                type: set()
+                description: returned output from git commit command and changed status
+        """
+        branch = self.module.params["branch"]
+        command = [self.git_path, "checkout", branch]
+
+        rc, output, error = self.module.run_command(command, cwd=self.path)
+
+        if rc == 0:
+            return {
+                "git_checkout": {"output": output, "error": error, "changed": True}
+            }
+        FailingMessage(self.module, rc, command, output, error)
+
     def status(self):
         """
         Run git status and check if repo has changes.
@@ -172,8 +197,8 @@ fi
                 type: dict()
                 description: returned output from git commit command and changed status
         """
-        comment = self.module.params["comment"]
-        command = [self.git_path, "commit", "-m", comment]
+        message = self.module.params["message"]
+        command = [self.git_path, "commit", "-m", message]
 
         rc, output, error = self.module.run_command(command, cwd=self.path)
 
@@ -183,20 +208,44 @@ fi
             }
         FailingMessage(self.module, rc, command, output, error)
 
+    def merge(self):
+        """
+        Merge into checked out branch.
+
+        args:
+            * module:
+                type: dict()
+                description: Ansible basic module utilities and module arguments.
+        return:
+            * result:
+                type: dict()
+                description: returned output from git merge command and changed status
+        """
+        source_branch = self.module.params.get("merge")
+        merge_options = self.module.params.get("merge_options")
+
+        command = [self.git_path, "merge", source_branch]
+
+        if merge_options:
+            for opt in merge_options:
+                command.insert(2, opt)
+
+        rc, output, error = self.module.run_command(command, cwd=self.path)
+
+        if rc == 0:
+            return {
+                "git_merge": {"output": output, "error": error, "changed": True}
+            }
+        FailingMessage(self.module, rc, command, output, error)
+
     def pull(self):
         """
         Get git changes from upstream before pushing.
 
         args:
-            * url:
-                type: str()
-                description: git url of the git repo.
-            * branch:
-                type: str()
-                description: git branch of the git repo.
-            * pull_options:
-                type: list()
-                description: pull options added to the pull command.
+            * module:
+                type: dict()
+                description: Ansible basic module utilities and module arguments.
         return:
             * result:
                 type: dict()
@@ -224,12 +273,9 @@ fi
         Push changes to remote repo.
 
         args:
-            * path:
-                type: path
-                description: git repo local path.
-            * cmd_push:
-                type: list()
-                description: list of commands to perform git push operation.
+            * module:
+                type: dict()
+                description: Ansible basic module utilities and module arguments.
         return:
             * result:
                 type: dict()
@@ -239,6 +285,7 @@ fi
         branch = self.module.params["branch"]
         push_option = self.module.params.get("push_option")
         push_force = self.module.params.get("push_force")
+        tag = self.module.params.get("tag")
 
         command = [self.git_path, "push", url, branch]
 
@@ -247,11 +294,47 @@ fi
 
         if push_force:
             command.append("--force")
+
+        if tag:
+            command.append("--tags")
         # Push result is returned in stderr instead of stdout, hence vars position is inverted.
         rc, error, output = self.module.run_command(command, cwd=self.path)
 
         if rc == 0:
             return {
                 "git_push": {"output": str(output), "error": str(error), "changed": True}
+            }
+        FailingMessage(self.module, rc, command, output, error)
+
+    def tag(self):
+        """
+        Tags the current state of repo
+
+        args:
+            * module:
+                type: dict()
+                description: Ansible basic module utilities and module arguments.
+        return:
+            * result:
+                type: dict()
+                description: returned output from git tag command and updated changed status.
+        """
+        tag_name: str = self.module.params["tag"]
+        message: str = self.module.params["message"]
+
+        command = [self.git_path, "tag", "-am", (message if message else tag_name), tag_name]       
+
+        # TODO:
+        # add a better way of handeling tag messages
+        # - if message was not given, prompt for message
+        # - if message was given but is empty, don't use any
+        # - if message was given and is not empty, use this as message
+
+        # Push result is returned in stderr instead of stdout, hence vars position is inverted.
+        rc, error, output = self.module.run_command(command, cwd=self.path)
+        
+        if rc == 0:
+            return {
+                "git_tag": {"output": str(output), "error": str(error), "changed": True}
             }
         FailingMessage(self.module, rc, command, output, error)

@@ -2,11 +2,11 @@ Module documentation can be found [here](../../../README.md)
 
 ### HOW INSTALL COLLECTION
 
-- Locally using `tar` file: `ansible-galaxy collection install lvrfrc87-git_acp-2.1.0.tar.gz`
+- Locally using `tar` file: `ansible-galaxy collection install studyly-git_mactp-2.1.0.tar.gz`
 
-- From GitHub: `ansible-galaxy collection install git+https://github.com/lvrfrc87/git-acp-ansible.git#ansible_collections/lvrfrc87/git_acp,master`
+- From GitHub: `ansible-galaxy collection install git@github.com:Studyly-GmbH/git-mactp-ansible.git#ansible_collections/studyly/git_mactp,master`
 
-- From [Ansible Galaxy](https://galaxy.ansible.com/): `ansible-galaxy collection install lvrfrc87.git_acp`
+- From [Ansible Galaxy](https://galaxy.ansible.com/): `ansible-galaxy collection install studyly.git_mactp`
 
 [Here](https://docs.ansible.com/ansible/latest/galaxy/user_guide.html#installing-a-collection-from-galaxy) more info regarding collection installation.
 
@@ -17,7 +17,7 @@ Module documentation can be found [here](../../../README.md)
 - hosts: localhost
   gather_facts: false
   collections:
-    - lvrfrc87.git_acp
+    - studyly.git_mactp
 
   tasks:
     - name: ADD FILE-1 VIA HTTPS.
@@ -26,7 +26,7 @@ Module documentation can be found [here](../../../README.md)
         GIT_AUTHOR_EMAIL: "me@me.me"
         GIT_COMMITTER_NAME: "me"
         GIT_COMMITTER_EMAIL: "me@me.me"
-      git_acp:
+      git_mactp:
         path: "{{ working_dir }}"
         branch: "master"
         comment: "Add {{ file1 }}."

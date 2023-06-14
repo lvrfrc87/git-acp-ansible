@@ -4,8 +4,8 @@ python: '3.7'
 
 env:
   global:
-    - COLLECTION_NAMESPACE: lvrfrc87
-    - COLLECTION_NAME: git_acp
+    - COLLECTION_NAMESPACE: studyly
+    - COLLECTION_NAME: git_mactp
   matrix:
   - ANSIBLE_VERSION=latest
 branches:
@@ -22,5 +22,5 @@ before_script:
   - cd ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
 script:
 - ansible-test sanity --docker -v plugins/modules/
-# - ansible-lint tests/integration/targets/git_acp/tasks/main.yml
+# - ansible-lint tests/integration/targets/git_mactp/tasks/main.yml
 - ansible-test integration -v --docker
