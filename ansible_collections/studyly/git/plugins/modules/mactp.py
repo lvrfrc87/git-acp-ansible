@@ -267,7 +267,7 @@ def main():
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        # required_together=[("message", "add")],
+        required_together=[("tag", "branch")],
         required_one_of=[("add", "pull", "push", "tag", "branch", "merge")],
         mutually_exclusive=["add", "tag", "merge"]
     )
