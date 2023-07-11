@@ -1,0 +1,41 @@
+---
+- name: Prepare Deploy
+  hosts: localhost
+  connection: local
+
+  collections:
+    - studyly.git
+
+  tasks:
+  # - name: CHECKOUT TO BRANCH-2
+  #   git_mactp:
+  #     path: "$HOME/Projects/test-automatic-deploy/"
+  #     url: "git@github.com:Studyly-GmbH/test-automatic-deploy.git"
+  #     branch: "BRANCH-2"
+
+  # - name: Create test.txt
+  #   shell: "touch $HOME/Projects/test-automatic-deploy/test.txt"
+
+  # - name: ADD and PUSH test.txt VIA SSH.
+  #   git_mactp:
+  #     path: "$HOME/Projects/test-automatic-deploy/"
+  #     branch: "BRANCH-2"
+  #     message: "Add test.txt."
+  #     add: [ "." ]
+  #     url: "git@github.com:Studyly-GmbH/test-automatic-deploy.git"
+
+  - name: TAG CURRENT STATE AND PUSH TO REMOTE
+    studyly.git.mactp:
+      path: "$HOME/Projects/test-automatic-deploy/"
+      url: "git@github.com:Studyly-GmbH/test-automatic-deploy.git"
+      branch: "BRANCH-2"
+      tag: "Tag1"
+      message: "This is a message. Hello world"
+
+  - name: MERGE TESTING TO MASTER
+    studyly.git.mactp:
+      path: "$HOME/Projects/test-automatic-deploy/"
+      url: "git@github.com:Studyly-GmbH/test-automatic-deploy.git"
+      branch: "master"
+      merge: "testing"
+      merge_options: [ "--ff-only" ]

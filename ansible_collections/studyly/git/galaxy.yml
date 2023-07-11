@@ -1,0 +1,15 @@
+namespace: studyly
+name: git
+version: 3.0.0
+readme: README.md
+
+authors:
+    - Federico Olivieri <lvrfrc87@gmail.com>
+    - Julian Mathes <julian.mathes@studyly.com>
+
+description: Manage git add, git commit, git push on a local or remote git repository.
+license:
+    - GPL-3.0-only
+
+repository: https://github.com/Studyly-GmbH/git-mactp-ansible
+homepage: https://github.com/Studyly-GmbH/git-mactp-ansible

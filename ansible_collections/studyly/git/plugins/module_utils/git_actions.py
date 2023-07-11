@@ -6,7 +6,7 @@ import os
 import stat
 import tempfile
 
-from ansible_collections.studyly.git_mactp.plugins.module_utils.messages import (
+from ansible_collections.studyly.git.plugins.module_utils.messages import (
     FailingMessage,
 )
 from ansible.module_utils.six import b

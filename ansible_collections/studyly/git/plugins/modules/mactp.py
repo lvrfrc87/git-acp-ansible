@@ -232,7 +232,7 @@ output:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.studyly.git_mactp.plugins.module_utils.git_actions import Git
+from ansible_collections.studyly.git.plugins.module_utils.git_actions import Git
 
 def main():
     """
