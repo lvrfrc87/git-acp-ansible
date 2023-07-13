@@ -252,7 +252,7 @@ def main():
         add=dict(default=None, type="list", elements="str"),
         ssh_params=dict(default=None, type="dict", required=False),
         # Name of working branch
-        branch=dict(default=None),
+        branch=dict(required=True, default=None),
         merge=dict(default=None, type="str"),
         merge_options=dict(default=None, type="list", elements="str"),
         pull=dict(default=False, type="bool"),
@@ -267,7 +267,6 @@ def main():
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        required_together=[("tag", "branch")],
         required_one_of=[("add", "pull", "push", "tag", "branch", "merge")],
         mutually_exclusive=["add", "tag", "merge"]
     )
