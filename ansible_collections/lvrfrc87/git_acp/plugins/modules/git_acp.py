@@ -289,11 +289,11 @@ def main():
             )
 
     git = Git(module)
-    changed_files = git.status()
+    changed_files, untracked = git.status()
 
-    if changed_files and clean:
-        pass
-    elif changed_files and not clean:
+    if all([changed_files, untracked, clean]):
+        result.update(git.clean())
+    else:
         if pull:
             result.update(git.pull())
 

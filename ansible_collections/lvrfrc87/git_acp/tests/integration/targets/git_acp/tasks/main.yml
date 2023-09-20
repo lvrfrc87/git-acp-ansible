@@ -1,4 +1,6 @@
 ---
+- import_tasks: clean.yml
+
 - name: 10000 - SETUP REPO.
   git:
     repo: "{{ https_repo }}"

@@ -151,11 +151,15 @@ fi
         rc, output, error = self.module.run_command(command, cwd=self.path)
 
         if rc == 0:
+            untracked = False
             for line in output.split("\n"):
                 file_name = line.split(" ")[-1].strip()
                 if file_name:
                     data.add(file_name)
-            return data
+            if "Untracked" in output:
+                untracked = True
+
+            return data, untracked
 
         else:
             FailingMessage(self.module, rc, command, output, error)
