@@ -106,6 +106,16 @@ options:
               the normal mechanism for resolving binary paths will be used.
         type: path
         version_added: "1.4.0"
+    clean:
+        description:
+            - If C(ignored), clean ignored files and directories in the repository.
+            - If C(untracked), clean untracked files and directories in the repository.
+            - If C(all), clean both ignored and untracked.
+        type: str
+        required: false
+        choices: [ "ignored", "untracked", "all" ]
+        version_added: "2.2.0"
+
 requirements:
     - git>=2.10.0 (the command line tool)
 """
@@ -248,6 +258,7 @@ def main():
         push_option=dict(default=None, type="str"),
         push_force=dict(default=False, type="bool"),
         url=dict(required=True, no_log=True),
+        clean=dict(default=None, type='str', required=False, choices=['ignored', 'untracked', 'all']),
     )
 
     module = AnsibleModule(
@@ -260,6 +271,7 @@ def main():
     pull = module.params.get("pull")
     push = module.params.get("push")
     ssh_params = module.params.get("ssh_params")
+    clean = module.params['clean']
 
     module.run_command_environ_update = dict(
         LANG="C.UTF-8", LC_ALL="C.UTF-8", LC_MESSAGES="C.UTF-8", LC_CTYPE="C.UTF-8"
@@ -279,7 +291,9 @@ def main():
     git = Git(module)
     changed_files = git.status()
 
-    if changed_files:
+    if changed_files and clean:
+        pass
+    elif changed_files and not clean:
         if pull:
             result.update(git.pull())
 

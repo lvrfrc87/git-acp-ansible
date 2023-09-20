@@ -17,6 +17,7 @@ class Git:
         self.module = module
         self.url = module.params["url"]
         self.path = module.params["path"]
+        self.clean = module.params["clean"]
         self.git_path = module.params["executable"] or module.get_bin_path(
             "git", True
         )
@@ -255,3 +256,17 @@ fi
                 "git_push": {"output": str(output), "error": str(error), "changed": True}
             }
         FailingMessage(self.module, rc, command, output, error)
+
+    def clean_files(self):
+        command = [self.git_path, 'clean', '-fd']
+        if self.clean != 'untracked':
+            command.append('-X')
+
+        rc, error, output = self.module.run_command(command, cwd=self.path)
+
+        if rc == 0:
+            return {
+                "git_clean": {"output": str(output), "error": str(error), "changed": True}
+            }
+        FailingMessage(self.module, rc, command, output, error)
+
