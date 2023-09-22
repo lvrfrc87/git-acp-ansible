@@ -18,7 +18,6 @@ author:
 short_description: Perform git add, commit, pull and push operations.
 description:
     - Manage C(git add), C(git commit) C(git push) and C(git pull) on a git repository.
-module: git_acp
 options:
     path:
         description:
@@ -298,7 +297,14 @@ def main():
             result.update(git.pull())
 
         git.add()
-        result.update(git.commit())
+
+        commit_result = git.commit()
+        result.update(commit_result)
+
+        # Exit if nothing to commit
+        if not commit_result["git_commit"]["changed"]:
+            result.update(warnings=commit_result["git_commit"]["output"])
+            module.exit_json(**result)
 
         if push:
             result.update(git.push())

@@ -112,11 +112,6 @@ fi
         """
         Run git add and stage changed files.
 
-        args:
-            * module:
-                type: dict()
-                description: Ansible basic module utilities and module arguments.
-
         return: null
         """
 
@@ -136,10 +131,6 @@ fi
         """
         Run git status and check if repo has changes.
 
-        args:
-            * module:
-                type: dict()
-                description: Ansible basic module utilities and module arguments.
         return:
             * data:
                 type: set()
@@ -168,10 +159,6 @@ fi
         """
         Run git commit and commit files in repo.
 
-        args:
-            * module:
-                type: dict()
-                description: Ansible basic module utilities and module arguments.
         return:
             * result:
                 type: dict()
@@ -182,26 +169,20 @@ fi
 
         rc, output, error = self.module.run_command(command, cwd=self.path)
 
-        if rc == 0:
-            return {
-                "git_commit": {"output": output, "error": error, "changed": True}
-            }
+        git_commit = {
+            "output": output,
+            "error": error,
+            "changed": rc == 0
+        }
+        if rc in (0, 1):
+            return {"git_commit": git_commit}
+
         FailingMessage(self.module, rc, command, output, error)
 
     def pull(self):
         """
         Get git changes from upstream before pushing.
 
-        args:
-            * url:
-                type: str()
-                description: git url of the git repo.
-            * branch:
-                type: str()
-                description: git branch of the git repo.
-            * pull_options:
-                type: list()
-                description: pull options added to the pull command.
         return:
             * result:
                 type: dict()
@@ -228,13 +209,6 @@ fi
         """
         Push changes to remote repo.
 
-        args:
-            * path:
-                type: path
-                description: git repo local path.
-            * cmd_push:
-                type: list()
-                description: list of commands to perform git push operation.
         return:
             * result:
                 type: dict()
@@ -262,6 +236,14 @@ fi
         FailingMessage(self.module, rc, command, output, error)
 
     def clean_files(self):
+        """
+        Clean untracked and/or ignored files.
+
+        return:
+            * result:
+                type: dict()
+                description: returned output from git push command and updated changed status.
+        """
         command = [self.git_path, 'clean', '-fd']
         if self.clean != 'untracked':
             command.append('-X')
@@ -273,4 +255,3 @@ fi
                 "git_clean": {"output": str(output), "error": str(error), "changed": True}
             }
         FailingMessage(self.module, rc, command, output, error)
-
