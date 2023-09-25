@@ -112,6 +112,15 @@ options:
               the normal mechanism for resolving binary paths will be used.
         type: path
         version_added: "1.4.0"
+    clean:
+        description:
+            - If C(ignored), clean ignored files and directories in the repository.
+            - If C(untracked), clean untracked files and directories in the repository.
+            - If C(all), clean both ignored and untracked.
+        type: str
+        required: false
+        choices: [ "ignored", "untracked", "all" ]
+        version_added: "2.2.0"
 ```
 
 ### Examples:

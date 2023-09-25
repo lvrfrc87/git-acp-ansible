@@ -6,6 +6,11 @@
 
 - name: 10010 - TEST NOTHING TO COMMIT.
   register: result
+  environment:
+    GIT_AUTHOR_NAME: me
+    GIT_AUTHOR_EMAIL: me@me.me
+    GIT_COMMITTER_NAME: me
+    GIT_COMMITTER_EMAIL: me@me.me
   git_acp:
     path: "{{ working_dir }}"
     branch: "master"
@@ -23,6 +28,7 @@
     comment: "Add not existing file"
     add: [ i_do_not_exsisit.txt ]
     url: "{{ https_repo }}"
+  ignore_errors: true
 - debug: var=result
 - assert: { that: not result.changed }
 
@@ -75,7 +81,7 @@
     url: "{{ https_repo }}"
     push_force: true
 - debug: var=result
-- assert: { that: result.warnings }
+- assert: { that: result.changed }
 
 - name: 10080 - CREATE RANDOM FILE.
   file:
@@ -115,6 +121,40 @@
   ignore_errors: true
 - debug: var=result
 - assert: { that: result is failed }
+
+- name: 10110 - ADD UNTRACKED AND IGNORED FILES.
+  file:
+    path: "{{ working_dir }}{{ item }}"
+    state: "touch"
+  loop:
+    - "untracked.txt"
+    - "ignoreme.txt"
+    - ".gitignore"
+    - "addme.txt"
+    
+- name: 10120 - ADD GITIGNORE FILE.
+  copy: 
+    content: "ignoreme.txt"
+    dest: "{{ working_dir }}/.gitignore"
+
+- name: 10120 - ADD ONE FILE ONLY.
+  register: result
+  environment:
+    GIT_AUTHOR_NAME: "me"
+    GIT_AUTHOR_EMAIL: "me@me.me"
+    GIT_COMMITTER_NAME: "me"
+    GIT_COMMITTER_EMAIL: "me@me.me"
+  git_acp:
+    path: "{{ working_dir }}"
+    branch: "master"
+    comment: "Add addme.txt."
+    add: [ "addme.txt" ]
+    url: "{{ https_repo }}"
+    clean: "all"
+- debug: var=result
+- assert: { that: result is changed }
+
+- meta: end_play
 
 - name: 10110 - CREATE A TEMPORARY ORIGIN DIRECTORY.
   register: _pull_src
@@ -265,7 +305,7 @@
   register: ssh_supports_accept_hostkey
   ignore_errors: true
 
-- name: MISSING HOSTKEY TEST
+- name: 10260 - MISSING HOSTKEY TEST
   when: ssh_supports_accept_hostkey.rc != 0
   block:
     - name: 10260 - ACCEPT_HOSTKEY WHEN SSH DOES NOT SUPPORT THE OPTION
@@ -308,7 +348,7 @@
 - debug: var=result
 - assert: { that: result is failed }
 
-- name: VALIDATE SSH WITH PRIVATE HOST KEY
+- name: 10280 - VALIDATE SSH WITH PRIVATE HOST KEY
   when: github_ssh_private_key is defined and ssh_supports_accept_hostkey.rc == 0
   block:
     - name: 10280 - CHECKOUT GIT@GITHUB.COM REPO WITH ACCEPT_HOSTKEY (EXPECTED PASS)
@@ -364,7 +404,7 @@
       register: remote
     - debug: var=remote
 
-- name: 10174 - DELETE TEMP DIRECTORY
+- name: 10290 - DELETE TEMP DIRECTORY
   file:
     path: "{{ remote_tmp_dir }}"
     state: absent

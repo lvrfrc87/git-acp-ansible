@@ -2,7 +2,7 @@ Module documentation can be found [here](../../../README.md)
 
 ### HOW INSTALL COLLECTION
 
-- Locally using `tar` file: `ansible-galaxy collection install lvrfrc87-git_acp-2.1.0.tar.gz`
+- Locally using `tar` file: `ansible-galaxy collection install lvrfrc87-git_acp-2.2.0.tar.gz`
 
 - From GitHub: `ansible-galaxy collection install git+https://github.com/lvrfrc87/git-acp-ansible.git#ansible_collections/lvrfrc87/git_acp,master`
 

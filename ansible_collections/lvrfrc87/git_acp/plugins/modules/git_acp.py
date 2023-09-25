@@ -18,7 +18,6 @@ author:
 short_description: Perform git add, commit, pull and push operations.
 description:
     - Manage C(git add), C(git commit) C(git push) and C(git pull) on a git repository.
-module: git_acp
 options:
     path:
         description:
@@ -106,6 +105,16 @@ options:
               the normal mechanism for resolving binary paths will be used.
         type: path
         version_added: "1.4.0"
+    clean:
+        description:
+            - If C(ignored), clean ignored files and directories in the repository.
+            - If C(untracked), clean untracked files and directories in the repository.
+            - If C(all), clean both ignored and untracked.
+        type: str
+        required: false
+        choices: [ "ignored", "untracked", "all" ]
+        version_added: "2.2.0"
+
 requirements:
     - git>=2.10.0 (the command line tool)
 """
@@ -248,6 +257,7 @@ def main():
         push_option=dict(default=None, type="str"),
         push_force=dict(default=False, type="bool"),
         url=dict(required=True, no_log=True),
+        clean=dict(default=None, type='str', required=False, choices=['ignored', 'untracked', 'all']),
     )
 
     module = AnsibleModule(
@@ -260,6 +270,7 @@ def main():
     pull = module.params.get("pull")
     push = module.params.get("push")
     ssh_params = module.params.get("ssh_params")
+    clean = module.params['clean']
 
     module.run_command_environ_update = dict(
         LANG="C.UTF-8", LC_ALL="C.UTF-8", LC_MESSAGES="C.UTF-8", LC_CTYPE="C.UTF-8"
@@ -277,14 +288,23 @@ def main():
             )
 
     git = Git(module)
-    changed_files = git.status()
+    changed_files, untracked = git.status()
 
-    if changed_files:
+    if all([changed_files, untracked, clean]):
+        result.update(git.clean())
+    else:
         if pull:
             result.update(git.pull())
 
         git.add()
-        result.update(git.commit())
+
+        commit_result = git.commit()
+        result.update(commit_result)
+
+        # Exit if nothing to commit
+        if not commit_result["git_commit"]["changed"]:
+            result.update(warnings=commit_result["git_commit"]["output"])
+            module.exit_json(**result)
 
         if push:
             result.update(git.push())
