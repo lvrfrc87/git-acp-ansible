@@ -1,3 +1,8 @@
+# Ver. 2.2.0
+
+- Add support for `clean` option.
+- Module exit with warning if nothing to commit.
+
 # Ver. 2.1.0
 
 - Add support for `push` option.
